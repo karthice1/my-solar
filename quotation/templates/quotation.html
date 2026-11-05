@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solar Proposal - {{ q.quotation_no }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            background: #ffffff;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        .page {
+            width: 210mm;
+            height: 297mm;
+            max-height: 297mm;
+            padding: 18mm 20mm;
+            page-break-after: always;
+            page-break-inside: avoid;
+            position: relative;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        .page:last-child {
+            page-break-after: avoid;
+        }
+        
+        /* Brand Colors */
+        :root {
+            --primary: {{ q.branding.primary_color or '#0f766e' }};
+            --secondary: {{ q.branding.secondary_color or '#f59e0b' }};
+        }
+
+        /* Typography & Utilities */
+        h1, h2, h3, h4 { color: #0f172a; font-weight: 700; }
+        .text-primary { color: var(--primary); }
+        .bg-primary { background-color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), #0d9488);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .header-company-name {
+            font-size: 14pt;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+        .header-tagline {
+            font-size: 7.5pt;
+            color: #64748b;
+        }
+        .header-meta {
+            text-align: right;
+            font-size: 8pt;
+            color: #475569;
+        }
+
+        .footer-bar {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7.5pt;
+            color: #94a3b8;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
+        th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            text-align: left;
+            padding: 7px 10px;
+            border-bottom: 1.5px solid #cbd5e1;
+        }
+        td {
+            padding: 6.5px 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tr:nth-child(even) td {
+            background-color: #fafafa;
+        }
+
+        /* Cards & Grid */
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .card-primary {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .metric-badge {
+            font-size: 16pt;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .metric-label {
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Cover specific styles */
+        .cover-hero {
+            background: linear-gradient(135deg, #042f2e 0%, var(--primary) 60%, #0d9488 100%);
+            border-radius: 14px;
+            padding: 36px 32px;
+            color: #ffffff;
+            margin: 20px 0 26px 0;
+            box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= PAGE 1: PROPOSAL COVER ================= -->
+    <div class="page">
+        <div>
+            <!-- Top Branding -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), #0d9488); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px;">⚡</div>
+                    <div>
+                        <h1 style="font-size: 18pt; color: var(--primary); font-weight: 800; letter-spacing: -0.5px;">{{ q.branding.company_name }}</h1>
+                        <p style="font-size: 8.5pt; color: #64748b;">{{ q.branding.tagline }}</p>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; font-size: 8.5pt; font-weight: 700; padding: 4px 12px; rounded: 6px;">OFFICIAL PROPOSAL</span>
+                </div>
+            </div>
+
+            <!-- Hero Box -->
+            <div class="cover-hero">
+                <p style="text-transform: uppercase; font-size: 9pt; letter-spacing: 1.5px; opacity: 0.85; font-weight: 600; margin-bottom: 8px;">ENGINEERED ROOFTOP SOLAR PV SYSTEM</p>
+                <h2 style="font-size: 26pt; font-weight: 800; color: #ffffff; line-height: 1.15; margin-bottom: 12px;">Turnkey Solar Proposal & Commercial Quotation</h2>
+                <p style="font-size: 11pt; opacity: 0.9; max-width: 90%;">Customized photovoltaic energy generation solution designed specifically for your TNEB service connection demand profile.</p>
+
+                <div style="display: flex; gap: 28px; margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.25);">
+                    <div>
+                        <div style="font-size: 8pt; opacity: 0.8; text-transform: uppercase;">PROPOSED SYSTEM</div>
+                        <div style="font-size: 22pt; font-weight: 800;">{{ q.system_capacity_kw }} kW</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 8pt; opacity: 0.8; text-transform: uppercase;">ANNUAL GENERATION</div>
+                        <div style="font-size: 22pt; font-weight: 800;">{{ format_num(q.generation.estimated_annual_generation_kwh) }} <span style="font-size: 11pt; font-weight: normal;">kWh/yr</span></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 8pt; opacity: 0.8; text-transform: uppercase;">NET INVESTMENT</div>
+                        <div style="font-size: 22pt; font-weight: 800;">{{ format_inr(q.pricing.net_customer_payable) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer & Quotation Meta Grid -->
+            <div class="grid-2" style="margin-top: 18px;">
+                <!-- Customer Card -->
+                <div class="card">
+                    <div style="font-size: 8pt; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">PREPARED EXCLUSIVELY FOR</div>
+                    <div style="font-size: 12pt; font-weight: 800; color: #0f172a; margin-bottom: 4px;">{{ q.customer_name }}</div>
+                    <table style="margin-top: 6px;">
+                        <tr><td style="width: 38%; padding: 3px 0; color: #64748b;">TNEB Consumer No:</td><td style="font-weight: 700; font-family: monospace;">{{ q.consumer_no }}</td></tr>
+                        <tr><td style="padding: 3px 0; color: #64748b;">Installation Address:</td><td style="line-height: 1.3;">{{ q.address | replace('\n', '<br>') | safe }}</td></tr>
+                        <tr><td style="padding: 3px 0; color: #64748b;">Tariff / Load:</td><td style="font-weight: 600;">{{ q.tariff_category }} • {{ q.sanctioned_load_kw }} kW</td></tr>
+                    </table>
+                </div>
+
+                <!-- Proposal Info Card -->
+                <div class="card">
+                    <div style="font-size: 8pt; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">PROPOSAL SPECIFICATIONS</div>
+                    <table>
+                        <tr><td style="width: 40%; padding: 4px 0; color: #64748b;">Quotation Ref:</td><td style="font-weight: 800; color: var(--primary); font-family: monospace;">{{ q.quotation_no }}</td></tr>
+                        <tr><td style="padding: 4px 0; color: #64748b;">Proposal Date:</td><td style="font-weight: 600;">{{ q.quotation_date }}</td></tr>
+                        <tr><td style="padding: 4px 0; color: #64748b;">Validity Period:</td><td>{{ q.commercial_terms.quotation_validity_days }} Days</td></tr>
+                        <tr><td style="padding: 4px 0; color: #64748b;">System Model:</td><td style="font-weight: 600; text-transform: uppercase;">{{ q.system_type }} Rooftop PV</td></tr>
+                        <tr><td style="padding: 4px 0; color: #64748b;">Consultant / Signatory:</td><td style="font-weight: 600;">{{ q.branding.authorized_signatory }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cover Footer -->
+        <div class="footer-bar">
+            <span>{{ q.branding.company_name }} • {{ q.branding.phone }} • {{ q.branding.email }}</span>
+            <span>Page 1 of 5</span>
+        </div>
+    </div>
+
+
+    <!-- ================= PAGE 2: CONSUMER ELECTRICITY ANALYSIS ================= -->
+    <div class="page">
+        <div>
+            <!-- Header -->
+            <div class="header-bar">
+                <div class="header-brand">
+                    <div class="header-logo-icon">⚡</div>
+                    <div>
+                        <div class="header-company-name">{{ q.branding.company_name }}</div>
+                        <div class="header-tagline">{{ q.branding.tagline }}</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <div><b>Ref:</b> {{ q.quotation_no }}</div>
+                    <div><b>Date:</b> {{ q.quotation_date }}</div>
+                </div>
+            </div>
+
+            <!-- Page Title -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700;">SECTION 01</div>
+                <h2 style="font-size: 16pt;">TNEB Consumer Electricity Consumption Profile</h2>
+                <p style="font-size: 8.5pt; color: #64748b;">Audited analysis of historical meter assessments retrieved directly from TNPDCL live billing server.</p>
+            </div>
+
+            <!-- Summary KPI Grid -->
+            <div class="grid-4" style="margin-bottom: 16px;">
+                <div class="card">
+                    <div class="metric-label">Cycles Audited</div>
+                    <div class="metric-badge">{{ q.consumption_analysis.cycles_analyzed }}</div>
+                    <div style="font-size: 7pt; color: #64748b;">{{ q.consumption_analysis.billing_frequency | title }} Cycle</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Monthly Average</div>
+                    <div class="metric-badge">{{ q.consumption_analysis.average_monthly_units }} <span style="font-size: 9pt; font-weight: normal;">kWh</span></div>
+                    <div style="font-size: 7pt; color: #64748b;">~{{ format_num(q.consumption_analysis.average_units_per_cycle) }} kWh / cycle</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Annualized Demand</div>
+                    <div class="metric-badge">{{ format_num(q.consumption_analysis.annualized_units) }} <span style="font-size: 9pt; font-weight: normal;">kWh</span></div>
+                    <div style="font-size: 7pt; color: #64748b;">12-Month Projection</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Effective Grid Rate</div>
+                    <div class="metric-badge">₹ {{ q.consumption_analysis.average_effective_rate_per_unit }}</div>
+                    <div style="font-size: 7pt; color: #64748b;">Average ₹ / kWh Billed</div>
+                </div>
+            </div>
+
+            <!-- Recent 12 Billing Cycles Table -->
+            <div style="margin-bottom: 14px;">
+                <div style="font-size: 9pt; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Historical Billing Cycles (Past 12 Recorded Periods)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Assessment</th>
+                            <th style="width: 18%; text-align: right;">Units Consumed (kWh)</th>
+                            <th style="width: 18%; text-align: right;">Billed CC Charges</th>
+                            <th style="width: 18%; text-align: right;">Effective Rate</th>
+                            <th style="width: 15%;">Status</th>
+                            <th style="width: 16%;">Payment Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cycle in q.consumption_analysis.monthly_trend[:10] %}
+                        <tr>
+                            <td style="font-weight: 600; font-family: monospace;">{{ cycle.assessment_date }}</td>
+                            <td style="text-align: right; font-weight: 700;">{{ format_num(cycle.units) }}</td>
+                            <td style="text-align: right;">{{ format_inr(cycle.charges) }}</td>
+                            <td style="text-align: right; color: #64748b;">
+                                {% if cycle.units > 0 %}
+                                ₹ {{ (cycle.charges / cycle.units) | round(2) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td><span style="font-size: 7pt; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px;">NORMAL</span></td>
+                            <td style="color: #64748b; font-size: 7.5pt;">Verified</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Data Quality & Seasonal Note -->
+            <div class="card" style="margin-top: 10px; border-left: 3px solid var(--primary);">
+                <div style="font-size: 8pt; font-weight: 700; color: #0f172a; margin-bottom: 2px;">Data Integrity & Solar Sizing Methodology</div>
+                <p style="font-size: 7.5pt; color: #64748b; line-height: 1.35;">
+                    The solar capacity calculation employs actual seasonal consumption records rather than an arbitrary static multiplier. 
+                    The annualized requirement of <b>{{ format_num(q.consumption_analysis.annualized_units) }} kWh</b> is offset against Tamil Nadu's specific annual solar irradiation yield factor (~1,450 kWh/kWp/year), ensuring optimal solar generation coverage without over-investing in unnecessary capacity.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-bar">
+            <span>{{ q.branding.company_name }} • Consumer {{ q.consumer_no }}</span>
+            <span>Page 2 of 5</span>
+        </div>
+    </div>
+
+
+    <!-- ================= PAGE 3: TECHNICAL SOLAR PROPOSAL ================= -->
+    <div class="page">
+        <div>
+            <!-- Header -->
+            <div class="header-bar">
+                <div class="header-brand">
+                    <div class="header-logo-icon">⚡</div>
+                    <div>
+                        <div class="header-company-name">{{ q.branding.company_name }}</div>
+                        <div class="header-tagline">{{ q.branding.tagline }}</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <div><b>Ref:</b> {{ q.quotation_no }}</div>
+                    <div><b>Date:</b> {{ q.quotation_date }}</div>
+                </div>
+            </div>
+
+            <!-- Page Title -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700;">SECTION 02</div>
+                <h2 style="font-size: 16pt;">Engineered Technical Solar Proposal</h2>
+                <p style="font-size: 8.5pt; color: #64748b;">Comprehensive Bill of Materials (BOM) & engineering specifications for {{ q.system_capacity_kw }} kW {{ q.system_type | title }} Photovoltaic Plant.</p>
+            </div>
+
+            <!-- Equipment Specifications Grid -->
+            <div class="grid-2" style="margin-bottom: 16px;">
+                <!-- PV Modules Card -->
+                <div class="card" style="border-top: 3px solid var(--primary);">
+                    <div style="font-size: 8pt; font-weight: 800; text-transform: uppercase; color: var(--primary); margin-bottom: 6px;">1. SOLAR PHOTOVOLTAIC MODULES</div>
+                    <div style="font-size: 11pt; font-weight: 700; margin-bottom: 2px;">{{ q.panel.manufacturer }}</div>
+                    <div style="font-size: 8pt; color: #64748b; margin-bottom: 8px;">Model: {{ q.panel.model }}</div>
+                    <table>
+                        <tr><td style="color: #64748b;">Module Wattage:</td><td style="font-weight: 700;">{{ q.panel.wattage_wp }} Wp Mono PERC / TOPCon</td></tr>
+                        <tr><td style="color: #64748b;">Total Modules:</td><td style="font-weight: 700; color: var(--primary);">{{ q.panel.quantity }} Panels</td></tr>
+                        <tr><td style="color: #64748b;">Total DC Capacity:</td><td style="font-weight: 700;">{{ q.system_capacity_kw }} kWp</td></tr>
+                        <tr><td style="color: #64748b;">Cell Technology:</td><td>{{ q.panel.technology }}</td></tr>
+                        <tr><td style="color: #64748b;">Product Warranty:</td><td>{{ q.panel.product_warranty_years }} Years Workmanship</td></tr>
+                        <tr><td style="color: #64748b;">Performance Warranty:</td><td>25 Years Linear (≥ 84.8% at Year 25)</td></tr>
+                    </table>
+                </div>
+
+                <!-- Inverter Card -->
+                <div class="card" style="border-top: 3px solid var(--secondary);">
+                    <div style="font-size: 8pt; font-weight: 800; text-transform: uppercase; color: var(--secondary); margin-bottom: 6px;">2. GRID-TIED SOLAR INVERTER</div>
+                    <div style="font-size: 11pt; font-weight: 700; margin-bottom: 2px;">{{ q.inverter.manufacturer }}</div>
+                    <div style="font-size: 8pt; color: #64748b; margin-bottom: 8px;">Model: {{ q.inverter.model }}</div>
+                    <table>
+                        <tr><td style="color: #64748b;">Rated AC Output:</td><td style="font-weight: 700;">{{ q.inverter.capacity_kw }} kW (Single/Three Phase)</td></tr>
+                        <tr><td style="color: #64748b;">Inverter Type:</td><td>{{ q.inverter.type }}</td></tr>
+                        <tr><td style="color: #64748b;">Inverter Quantity:</td><td>{{ q.inverter.quantity }} Unit</td></tr>
+                        <tr><td style="color: #64748b;">Peak Efficiency:</td><td>97.8% Dual MPPT Tracking</td></tr>
+                        <tr><td style="color: #64748b;">IoT Telemetry:</td><td>Integrated 24×7 Cloud Wi-Fi App</td></tr>
+                        <tr><td style="color: #64748b;">Standard Warranty:</td><td>{{ q.inverter.warranty_years }} Years Replacement Warranty</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mounting Structure & Balance of System -->
+            <div class="grid-2" style="margin-bottom: 16px;">
+                <div class="card">
+                    <div style="font-size: 8pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">3. Mounting Structure & Civil Works</div>
+                    <p style="font-size: 7.5pt; color: #64748b; line-height: 1.35;">
+                        Heavy-duty Hot-Dip Galvanized (HDG 80 Micron) / Marine-Grade Aluminum mounting structure engineered to withstand wind speeds up to 170 km/h. Fitted with SS304 anti-rust fasteners and weather-tight chemical anchor fasteners.
+                    </p>
+                </div>
+                <div class="card">
+                    <div style="font-size: 8pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">4. Electrical Balance of System (BOS)</div>
+                    <p style="font-size: 7.5pt; color: #64748b; line-height: 1.35;">
+                        UV-resistant cross-linked solar DC cables (Polycab/Siechem 4 sq.mm), IP65 weather-proof ACDB/DCDB boxes with Type-II Surge Protection Devices (SPD), Class-A copper bonded chemical earthing electrodes and lightning arrester.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Generation Calendar Matrix -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="font-size: 8.5pt; font-weight: 700; color: #0f172a;">Estimated Monthly Power Generation Profile (Annual Total: {{ format_num(q.generation.estimated_annual_generation_kwh) }} kWh)</div>
+                    <span style="font-size: 7.5pt; color: #64748b;">Tamil Nadu Specific Irradiance Model</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; text-align: center;">
+                    {% for m in q.generation.monthly_breakdown %}
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 4px;">
+                        <div style="font-size: 7pt; font-weight: 700; color: #64748b;">{{ m.month }}</div>
+                        <div style="font-size: 9.5pt; font-weight: 800; color: var(--primary);">{{ format_num(m.estimated_kwh) }}</div>
+                        <div style="font-size: 6.5pt; color: #94a3b8;">kWh</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-bar">
+            <span>{{ q.branding.company_name }} • Technical Proposal</span>
+            <span>Page 3 of 5</span>
+        </div>
+    </div>
+
+
+    <!-- ================= PAGE 4: COMMERCIAL QUOTATION ================= -->
+    <div class="page">
+        <div>
+            <!-- Header -->
+            <div class="header-bar">
+                <div class="header-brand">
+                    <div class="header-logo-icon">⚡</div>
+                    <div>
+                        <div class="header-company-name">{{ q.branding.company_name }}</div>
+                        <div class="header-tagline">{{ q.branding.tagline }}</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <div><b>Ref:</b> {{ q.quotation_no }}</div>
+                    <div><b>Date:</b> {{ q.quotation_date }}</div>
+                </div>
+            </div>
+
+            <!-- Page Title -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700;">SECTION 03</div>
+                <h2 style="font-size: 16pt;">Commercial Investment & Bill of Quantities (BOQ)</h2>
+                <p style="font-size: 8.5pt; color: #64748b;">Itemized commercial quotation with GST and Central Financial Assistance (Subsidy) deductions.</p>
+            </div>
+
+            <!-- BOQ Table -->
+            <div style="margin-bottom: 16px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">S.No</th>
+                            <th style="width: 50%;">Item Description</th>
+                            <th style="width: 22%;">Category</th>
+                            <th style="width: 20%; text-align: right;">Amount (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in q.pricing.itemized_boq %}
+                        <tr>
+                            <td style="color: #64748b;">{{ loop.index }}</td>
+                            <td style="font-weight: 600;">{{ item.item }}</td>
+                            <td><span style="font-size: 7pt; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px;">{{ item.category }}</span></td>
+                            <td style="text-align: right; font-weight: 700;">{{ format_inr(item.amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Commercial Summary Breakdown -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                <div style="width: 55%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 4px 0; color: #64748b;">Base System Turnkey Cost:</td>
+                            <td style="padding: 4px 0; text-align: right; font-weight: 700;">{{ format_inr(q.pricing.base_system_cost) }}</td>
+                        </tr>
+                        {% if q.pricing.discount_amount > 0 %}
+                        <tr>
+                            <td style="padding: 4px 0; color: #e11d48; font-weight: 600;">Commercial Discount Applied:</td>
+                            <td style="padding: 4px 0; text-align: right; font-weight: 700; color: #e11d48;">- {{ format_inr(q.pricing.discount_amount) }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td style="padding: 4px 0; color: #64748b;">Goods & Services Tax (GST @ {{ q.pricing.gst_rate_percent }}%):</td>
+                            <td style="padding: 4px 0; text-align: right; font-weight: 700;">{{ format_inr(q.pricing.gst_amount) }}</td>
+                        </tr>
+                        <tr style="border-top: 1.5px solid #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">
+                            <td style="padding: 6px 0; font-size: 9.5pt; font-weight: 800; color: #0f172a;">Gross Contract Price:</td>
+                            <td style="padding: 6px 0; text-align: right; font-size: 10pt; font-weight: 800; color: #0f172a;">{{ format_inr(q.pricing.gross_contract_value) }}</td>
+                        </tr>
+                        {% if q.pricing.subsidy_eligible and q.pricing.subsidy_amount > 0 %}
+                        <tr>
+                            <td style="padding: 6px 0; color: #15803d; font-weight: 700;">
+                                PM Surya Ghar Central Subsidy (CFA):
+                                <div style="font-size: 6.5pt; color: #166534; font-weight: normal;">Direct DBT to consumer bank account</div>
+                            </td>
+                            <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #15803d; font-size: 10pt;">
+                                - {{ format_inr(q.pricing.subsidy_amount) }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr style="background: #f0fdf4;">
+                            <td style="padding: 8px 6px; font-size: 10.5pt; font-weight: 800; color: var(--primary);">FINAL NET CUSTOMER PAYABLE:</td>
+                            <td style="padding: 8px 6px; text-align: right; font-size: 12.5pt; font-weight: 800; color: var(--primary);">{{ format_inr(q.pricing.net_customer_payable) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Milestone Payment Terms -->
+            <div class="card">
+                <div style="font-size: 8.5pt; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Commercial Milestone Payment Schedule</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Milestone</th>
+                            <th style="width: 20%; text-align: center;">Percentage</th>
+                            <th style="width: 25%; text-align: right;">Amount (₹)</th>
+                            <th style="width: 30%;">Trigger Event</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 600;">1. Booking Advance</td>
+                            <td style="text-align: center; font-weight: 700;">20%</td>
+                            <td style="text-align: right; font-weight: 700;">{{ format_inr(q.pricing.gross_contract_value * 0.20) }}</td>
+                            <td style="color: #64748b;">With Work Order & TANGEDCO application</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">2. Material Dispatch</td>
+                            <td style="text-align: center; font-weight: 700;">70%</td>
+                            <td style="text-align: right; font-weight: 700;">{{ format_inr(q.pricing.gross_contract_value * 0.70) }}</td>
+                            <td style="color: #64748b;">Prior to dispatch of modules & inverter to site</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">3. Commissioning</td>
+                            <td style="text-align: center; font-weight: 700;">10%</td>
+                            <td style="text-align: right; font-weight: 700;">{{ format_inr(q.pricing.gross_contract_value * 0.10) }}</td>
+                            <td style="color: #64748b;">Upon bi-directional meter test & grid sync</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-bar">
+            <span>{{ q.branding.company_name }} • Commercial Quotation</span>
+            <span>Page 4 of 5</span>
+        </div>
+    </div>
+
+
+    <!-- ================= PAGE 5: SAVINGS, WARRANTIES & TERMS ================= -->
+    <div class="page">
+        <div>
+            <!-- Header -->
+            <div class="header-bar">
+                <div class="header-brand">
+                    <div class="header-logo-icon">⚡</div>
+                    <div>
+                        <div class="header-company-name">{{ q.branding.company_name }}</div>
+                        <div class="header-tagline">{{ q.branding.tagline }}</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <div><b>Ref:</b> {{ q.quotation_no }}</div>
+                    <div><b>Date:</b> {{ q.quotation_date }}</div>
+                </div>
+            </div>
+
+            <!-- Page Title -->
+            <div style="margin-bottom: 14px;">
+                <div style="font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700;">SECTION 04</div>
+                <h2 style="font-size: 16pt;">Financial Returns, Warranties & Customer Acceptance</h2>
+                <p style="font-size: 8.5pt; color: #64748b;">Projected 25-year lifecycle savings, warranty commitments, and formal agreement terms.</p>
+            </div>
+
+            <!-- Financial Returns Grid -->
+            <div class="grid-4" style="margin-bottom: 14px;">
+                <div class="card card-primary">
+                    <div class="metric-label">Year 1 Savings</div>
+                    <div class="metric-badge" style="font-size: 14pt;">{{ format_inr(q.financials.year_1_annual_savings_rs) }}</div>
+                    <div style="font-size: 7pt; color: #166534;">~{{ format_inr(q.financials.monthly_average_savings_rs) }} / month</div>
+                </div>
+                <div class="card card-primary">
+                    <div class="metric-label">Payback Period</div>
+                    <div class="metric-badge" style="font-size: 14pt;">{{ q.financials.simple_payback_years }} <span style="font-size: 9pt; font-weight: normal;">Years</span></div>
+                    <div style="font-size: 7pt; color: #166534;">Break-even Year {{ q.financials.break_even_year }}</div>
+                </div>
+                <div class="card card-primary">
+                    <div class="metric-label">25-Yr Net Savings</div>
+                    <div class="metric-badge" style="font-size: 14pt;">{{ format_inr(q.financials.total_25_year_savings_rs) }}</div>
+                    <div style="font-size: 7pt; color: #166534;">Cumulative Cashflow</div>
+                </div>
+                <div class="card card-primary">
+                    <div class="metric-label">Lifetime ROI</div>
+                    <div class="metric-badge" style="font-size: 14pt;">{{ q.financials.roi_percent }}%</div>
+                    <div style="font-size: 7pt; color: #166534;">Return on Investment</div>
+                </div>
+            </div>
+
+            <!-- Warranty Matrix Table -->
+            <div style="margin-bottom: 12px;">
+                <div style="font-size: 8.5pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Comprehensive Equipment & Workmanship Warranties</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Component</th>
+                            <th style="width: 25%;">Warranty Period</th>
+                            <th style="width: 50%;">Scope of Warranty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 600;">Solar PV Modules</td>
+                            <td style="font-weight: 700; color: var(--primary);">12 Yrs Product • 25 Yrs Perf.</td>
+                            <td style="color: #64748b;">Tier-1 linear output guarantee: 90% at Year 10, ≥ 84.8% at Year 25.</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Solar Inverter</td>
+                            <td style="font-weight: 700; color: var(--primary);">{{ q.inverter.warranty_years }} Years Replacement</td>
+                            <td style="color: #64748b;">Complete manufacturing & electrical malfunction replacement warranty.</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Mounting Structure</td>
+                            <td style="font-weight: 700; color: var(--primary);">10 Years Anti-Rust</td>
+                            <td style="color: #64748b;">Structural integrity, corrosion resistance (Hot-Dip Galvanized / Al).</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Workmanship & Service</td>
+                            <td style="font-weight: 700; color: var(--primary);">5 Years Comprehensive</td>
+                            <td style="color: #64748b;">Free annual preventive maintenance & TANGEDCO liaisoning support.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Terms & Conditions Bullet Points -->
+            <div class="card" style="margin-bottom: 14px; padding: 8px 12px;">
+                <div style="font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 3px;">Terms and Conditions</div>
+                <ul style="font-size: 7pt; color: #64748b; padding-left: 14px; line-height: 1.3;">
+                    {% for term in q.commercial_terms.terms_and_conditions %}
+                    <li>{{ term }}</li>
+                    {% endfor %}
+                    <li>This quotation remains valid for <b>{{ q.commercial_terms.quotation_validity_days }} days</b> from date of issuance.</li>
+                </ul>
+            </div>
+
+            <!-- Signature & Acceptance Block -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+                <!-- Customer Acceptance -->
+                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 8pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">CUSTOMER ACCEPTANCE</div>
+                    <p style="font-size: 7pt; color: #64748b; margin-bottom: 24px;">I hereby confirm acceptance of this proposal, technical specifications and commercial terms.</p>
+                    <div style="border-top: 1px solid #94a3b8; display: flex; justify-content: space-between; padding-top: 4px; font-size: 7.5pt; color: #475569;">
+                        <span>Authorized Signatory / Date</span>
+                        <span>Stamp / Seal</span>
+                    </div>
+                </div>
+
+                <!-- Company Signatory -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #f8fafc;">
+                    <div style="font-size: 8pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">FOR {{ q.branding.company_name | upper }}</div>
+                    <p style="font-size: 7pt; color: #64748b; margin-bottom: 12px;">Authorized Representative Signature</p>
+                    <div style="font-size: 9.5pt; font-weight: 800; color: var(--primary);">{{ q.branding.authorized_signatory }}</div>
+                    <div style="font-size: 7.5pt; color: #64748b; margin-bottom: 8px;">{{ q.branding.signatory_title }}</div>
+                    <div style="border-top: 1px solid #cbd5e1; padding-top: 4px; font-size: 7pt; color: #94a3b8;">
+                        GSTIN: {{ q.branding.gstin }} • {{ q.branding.website }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-bar">
+            <span>{{ q.branding.company_name }} • Proposal Acceptance</span>
+            <span>Page 5 of 5</span>
+        </div>
+    </div>
+
+</body>
+</html>

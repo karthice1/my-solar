@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Temporary Probes & Scraped Ledgers
+probe_*
+tneb_detail_*.png
+tneb_detail_*.html
+tneb_report_*
+!tneb_report_044060072111.json
+!tneb_report_044060072111.md
+*.log
+
+# Generated Quotations & Uploads (keep directories)
+generated_quotations/*.pdf
+uploads/*
+!uploads/.gitkeep
+!generated_quotations/.gitkeep
+
+# Local SQLite databases
+*.db
+*.sqlite3
+
+# IDE / Editor configuration
+.idea/
+.vscode/

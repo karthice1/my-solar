@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNEB Account Extractor & Interactive Solar Quotation Builder</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        solar: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased" x-data="tnebApp()" x-init="initApp()">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- App Brand & Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" @click="activeNav = 'extraction'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 font-bold text-xl">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+                        TNEB Solar Intelligence
+                        <span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">v2.0</span>
+                    </h1>
+                    <p class="text-xs text-slate-500">Live Scraper • Solar Sizing • Quotation Management</p>
+                </div>
+            </div>
+
+            <!-- Application Navigation Tabs -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+                <button 
+                    type="button" 
+                    @click="activeNav = 'dashboard'" 
+                    :class="activeNav === 'dashboard' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    Dashboard
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'extraction'" 
+                    :class="activeNav === 'extraction' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Consumer Extraction
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'builder'; if (!currentQuotation && reportData) loadQuotationForConsumer(reportData.consumer_no);" 
+                    :class="activeNav === 'builder' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Quotation Builder
+                    <span x-show="currentQuotation" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'history'; fetchQuotationHistory();" 
+                    :class="activeNav === 'history' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Quotation History
+                    <span class="bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full text-[10px]" x-text="quotationHistory.length">0</span>
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'settings'; loadSettings();" 
+                    :class="activeNav === 'settings' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Quotation Settings
+                    <span x-show="!ownerAuthenticated" class="text-[10px]">🔒</span>
+                </button>
+            </nav>
+
+            <!-- Quick Action / Status -->
+            <div class="flex items-center space-x-3">
+                <button @click="showHistoryModal = true" class="text-xs font-medium text-slate-600 hover:text-brand-600 flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-slate-200 hover:border-brand-200 hover:bg-brand-50/50 transition">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                    Reports (<span x-text="savedReports.length">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar (stacked below header) -->
+        <div class="md:hidden flex overflow-x-auto border-t border-slate-100 bg-slate-50 px-4 py-2 space-x-2 text-xs font-semibold custom-scrollbar">
+            <button @click="activeNav = 'dashboard'" :class="activeNav === 'dashboard' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Dashboard</button>
+            <button @click="activeNav = 'extraction'" :class="activeNav === 'extraction' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Extraction</button>
+            <button @click="activeNav = 'builder'" :class="activeNav === 'builder' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Quotation Builder</button>
+            <button @click="activeNav = 'history'; fetchQuotationHistory();" :class="activeNav === 'history' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">History</button>
+            <button @click="activeNav = 'settings'; loadSettings();" :class="activeNav === 'settings' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Settings 🔒</button>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- ====================================================================== -->
+        <!-- 1. DASHBOARD OVERVIEW SECTION                                          -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'dashboard'" x-cloak class="space-y-6">
+            <!-- Welcome Banner -->
+            <div class="bg-gradient-to-r from-brand-700 via-indigo-700 to-emerald-700 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                    <span class="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-2">TNEB Solar Intelligence & Proposal System</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Interactive Solar Quotation Management</h2>
+                    <p class="text-sm text-indigo-100 max-w-2xl mt-1">Audit customer electricity bills, calculate optimal rooftop solar capacity, generate commercial quotes, and download client-ready proposals in seconds.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button @click="activeNav = 'extraction'" class="px-5 py-2.5 bg-white text-brand-700 hover:bg-slate-100 font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
+                        <span>⚡ Extract New Account</span>
+                    </button>
+                    <button @click="activeNav = 'history'; fetchQuotationHistory();" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl backdrop-blur-sm transition flex items-center gap-2">
+                        <span>📜 View Quotations</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TNEB Reports Extracted</div>
+                    <div class="text-2xl font-bold text-slate-900 mt-2" x-text="savedReports.length">0</div>
+                    <div class="text-xs text-slate-500 mt-1">Verified live accounts on disk</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Quotations Generated</div>
+                    <div class="text-2xl font-bold text-brand-600 mt-2" x-text="quotationHistory.length">0</div>
+                    <div class="text-xs text-slate-500 mt-1">Proposals created & saved</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Solar kW Proposed</div>
+                    <div class="text-2xl font-bold text-emerald-600 mt-2" x-text="getTotalProposedKw() + ' kW'">0 kW</div>
+                    <div class="text-xs text-slate-500 mt-1">Cumulative PV capacity</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Owner Settings</div>
+                    <div class="text-sm font-bold text-slate-900 mt-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span x-text="ownerSettings?.branding?.company_name || 'RenSun Solar Energy'"></span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1" x-text="'Rate: ₹ ' + (ownerSettings?.pricing?.price_per_kw || 52000) + ' / kW'"></div>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg mb-3">1</div>
+                        <h3 class="font-bold text-slate-900">Step 1: Extract TNEB Data</h3>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Solve TNEB portal captcha, read 24 billing cycles, verify ledger and auto-calculate baseline solar load.</p>
+                    </div>
+                    <button @click="activeNav = 'extraction'" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition">Open Extraction Console →</button>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-3">2</div>
+                        <h3 class="font-bold text-slate-900">Step 2: Interactive Quotation</h3>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Engage with customer: adjust panel count, capacity, commercial discounts, compare 3 packages, preview live.</p>
+                    </div>
+                    <button @click="activeNav = 'builder'; if (!currentQuotation && savedReports.length > 0) loadQuotationForConsumer(savedReports[0].consumer_no);" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition">Open Quotation Builder →</button>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg mb-3">3</div>
+                        <h3 class="font-bold text-slate-900">Step 3: Download Final PDF</h3>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Generate 5-page pixel-perfect formal proposal with BOM, BOQ, subsidy deduction, 25-yr ROI and signature terms.</p>
+                    </div>
+                    <button @click="activeNav = 'history'; fetchQuotationHistory();" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition">View Quotation History →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================== -->
+        <!-- 2. CONSUMER EXTRACTION SECTION (EXISTING MODULE PRESERVED)             -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'extraction'" class="space-y-8">
+            <!-- SEARCH & EXTRACTION INPUT CARD -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                <div class="max-w-3xl">
+                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Extract Consumer Billing & Ledger Data</h2>
+                    <p class="text-sm text-slate-600 mt-1">Enter your TNEB portal credentials and target 12-digit consumer service number. Engine extracts 24 billing cycles, checks exact match, estimates solar sizing and protects primary connections.</p>
+                </div>
+
+                <form @submit.prevent="startExtraction()" class="mt-6 space-y-4">
+                    <!-- CREDENTIALS ROW -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- USER ID -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                TNEB User ID
+                            </label>
+                            <input 
+                                type="text" 
+                                x-model="userId" 
+                                placeholder="Enter TNEB User ID (e.g. karthice1)" 
+                                :disabled="isLoading"
+                                autocomplete="username"
+                                class="block w-full px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-400 transition"
+                                required
+                            >
+                        </div>
+
+                        <!-- PASSWORD -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    TNEB Password
+                                </span>
+                                <button type="button" @click="showPassword = !showPassword" class="text-[11px] font-normal text-slate-500 hover:text-brand-600 transition">
+                                    <span x-text="showPassword ? 'Hide' : 'Show'"></span>
+                                </button>
+                            </label>
+                            <input 
+                                :type="showPassword ? 'text' : 'password'" 
+                                x-model="password" 
+                                placeholder="Enter TNEB Password" 
+                                :disabled="isLoading"
+                                autocomplete="current-password"
+                                class="block w-full px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-400 transition"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- CONSUMER NUMBER & SUBMIT ROW -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Target Consumer Number
+                        </label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <span class="text-xs font-bold font-mono text-slate-400">#</span>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    x-model="consumerNo" 
+                                    placeholder="Enter 12-digit consumer number (e.g. 044060072111)" 
+                                    maxlength="15"
+                                    :disabled="isLoading"
+                                    class="block w-full pl-9 pr-4 py-3 text-base font-mono rounded-xl border border-slate-300 shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-400 transition"
+                                    required
+                                >
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                :disabled="isLoading"
+                                class="px-8 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/35 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center space-x-2"
+                            >
+                                <span x-show="!isLoading">⚡ Start Automated Extraction</span>
+                                <span x-show="isLoading" class="flex items-center gap-2">
+                                    <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    <span>Extracting Account...</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- OPTIONS & SAMPLES -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                        <label class="flex items-center space-x-2 text-xs text-slate-600 cursor-pointer">
+                            <input type="checkbox" x-model="deleteAfter" :disabled="isLoading" class="rounded text-brand-600 focus:ring-brand-500 h-4 w-4 border-slate-300">
+                            <span>Auto-delete temporary connection after extraction (Safe Primary Protection active)</span>
+                        </label>
+
+                        <div class="flex items-center space-x-2 text-xs text-slate-500">
+                            <span>Quick Load:</span>
+                            <button type="button" @click="loadSample('044060072111')" class="font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded transition">044060072111 (Primary)</button>
+                            <button type="button" @click="loadSample('04406007627')" class="font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded transition">04406007627</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ERROR ALERT BANNER -->
+            <section x-show="errorMessage" x-cloak class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-rose-100 text-rose-700 rounded-xl flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="text-base font-bold text-rose-900 tracking-tight" x-text="errorTitle || 'Extraction Error'"></h3>
+                            <button type="button" @click="errorMessage = '';" class="text-rose-400 hover:text-rose-700 text-lg font-bold p-1 leading-none">&times;</button>
+                        </div>
+                        <p class="text-sm text-rose-800 mt-1.5 leading-relaxed font-normal" x-text="errorMessage"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LIVE STREAMING STEP PROGRESS -->
+            <section x-show="isLoading || liveLogs.length > 0" x-cloak class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full" :class="isLoading ? 'bg-amber-400 animate-ping' : (errorMessage ? 'bg-rose-500' : 'bg-emerald-500')"></span>
+                        <h3 class="text-sm font-semibold text-slate-900" x-text="isLoading ? 'Extraction in Progress' : (errorMessage ? 'Extraction Stopped' : 'Pipeline Completed')"></h3>
+                    </div>
+                    <div class="text-xs font-mono text-slate-500">
+                        <span>Target: <span class="font-semibold text-brand-600" x-text="activeConsumer"></span></span>
+                    </div>
+                </div>
+
+                <!-- STEP PROGRESS BADGES -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                    <div class="p-3 rounded-xl border flex flex-col justify-between" :class="getStepCardClass('login')">
+                        <div class="flex items-center justify-between"><span class="font-semibold">1. Authenticate</span><span x-html="getStepIcon('login')"></span></div>
+                        <span class="text-[11px] opacity-80 mt-1">Captcha & Login</span>
+                    </div>
+                    <div class="p-3 rounded-xl border flex flex-col justify-between" :class="getStepCardClass('add')">
+                        <div class="flex items-center justify-between"><span class="font-semibold">2. Add Number</span><span x-html="getStepIcon('add')"></span></div>
+                        <span class="text-[11px] opacity-80 mt-1">Verify Name & SC</span>
+                    </div>
+                    <div class="p-3 rounded-xl border flex flex-col justify-between" :class="getStepCardClass('summary')">
+                        <div class="flex items-center justify-between"><span class="font-semibold">3. Detconws</span><span x-html="getStepIcon('summary')"></span></div>
+                        <span class="text-[11px] opacity-80 mt-1">Ledger Open</span>
+                    </div>
+                    <div class="p-3 rounded-xl border flex flex-col justify-between" :class="getStepCardClass('report')">
+                        <div class="flex items-center justify-between"><span class="font-semibold">4. Parse Data</span><span x-html="getStepIcon('report')"></span></div>
+                        <span class="text-[11px] opacity-80 mt-1">24-Cycles Ledger</span>
+                    </div>
+                    <div class="p-3 rounded-xl border flex flex-col justify-between" :class="getStepCardClass('delete')">
+                        <div class="flex items-center justify-between"><span class="font-semibold">5. Cleanup</span><span x-html="getStepIcon('delete')"></span></div>
+                        <span class="text-[11px] opacity-80 mt-1">Delete Number</span>
+                    </div>
+                </div>
+
+                <!-- LIVE CONSOLE LOGS -->
+                <div class="bg-slate-950 text-slate-200 rounded-xl p-4 font-mono text-xs max-h-48 overflow-y-auto custom-scrollbar space-y-1" id="terminalLogs">
+                    <template x-for="(log, idx) in liveLogs" :key="idx">
+                        <div class="flex items-start space-x-2">
+                            <span class="text-slate-500 select-none" x-text="log.time"></span>
+                            <span :class="{
+                                'text-emerald-400': log.status === 'success',
+                                'text-amber-400': log.status === 'progress',
+                                'text-rose-400': log.status === 'error',
+                                'text-slate-300': log.status === 'info'
+                            }" x-text="log.message"></span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- CONNECTION LIFECYCLE & CLEANUP PROTECTION STATUS BANNER -->
+            <section x-show="reportData && reportData.connection_state" x-cloak class="rounded-2xl border-2 p-5 shadow-sm transition-all"
+                :class="{
+                    'bg-indigo-50/70 border-indigo-200 text-indigo-950': reportData?.connection_state?.is_primary_connection,
+                    'bg-slate-50 border-slate-300 text-slate-900': reportData?.connection_state?.was_registered_before_extraction && !reportData?.connection_state?.is_primary_connection,
+                    'bg-emerald-50 border-emerald-200 text-emerald-950': reportData?.connection_state?.cleanup_status === 'SUCCESS_REMOVED',
+                    'bg-amber-50 border-amber-200 text-amber-950': reportData?.connection_state?.cleanup_status === 'FAILED_VERIFICATION' || reportData?.connection_state?.cleanup_status === 'SAFETY_PREVENTED'
+                }"
+            >
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0"
+                            :class="{
+                                'bg-indigo-600 text-white': reportData?.connection_state?.is_primary_connection,
+                                'bg-slate-700 text-white': reportData?.connection_state?.was_registered_before_extraction && !reportData?.connection_state?.is_primary_connection,
+                                'bg-emerald-600 text-white': reportData?.connection_state?.cleanup_status === 'SUCCESS_REMOVED',
+                                'bg-amber-600 text-white': reportData?.connection_state?.cleanup_status === 'FAILED_VERIFICATION' || reportData?.connection_state?.cleanup_status === 'SAFETY_PREVENTED'
+                            }"
+                        >
+                            <span x-show="reportData?.connection_state?.is_primary_connection">🛡️</span>
+                            <span x-show="reportData?.connection_state?.was_registered_before_extraction && !reportData?.connection_state?.is_primary_connection">📁</span>
+                            <span x-show="reportData?.connection_state?.cleanup_status === 'SUCCESS_REMOVED'">✓</span>
+                            <span x-show="reportData?.connection_state?.cleanup_status === 'FAILED_VERIFICATION' || reportData?.connection_state?.cleanup_status === 'SAFETY_PREVENTED'">⚠</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-sm tracking-tight" x-text="
+                                    reportData?.connection_state?.is_primary_connection ? 'Primary Consumer Connection (Protected)' :
+                                    (reportData?.connection_state?.was_registered_before_extraction ? 'Pre-Existing Registered Connection (Retained)' :
+                                    (reportData?.connection_state?.cleanup_status === 'SUCCESS_REMOVED' ? 'Temporary Connection (Auto-Removed)' : 'Connection Lifecycle Audited'))
+                                "></h4>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold uppercase"
+                                    :class="{
+                                        'bg-indigo-100 text-indigo-800 border border-indigo-300': reportData?.connection_state?.is_primary_connection,
+                                        'bg-slate-200 text-slate-800': reportData?.connection_state?.was_registered_before_extraction && !reportData?.connection_state?.is_primary_connection,
+                                        'bg-emerald-100 text-emerald-800 border border-emerald-300': reportData?.connection_state?.cleanup_status === 'SUCCESS_REMOVED'
+                                    }"
+                                    x-text="reportData?.connection_state?.cleanup_status"
+                                ></span>
+                            </div>
+                            <p class="text-xs mt-1 opacity-90 font-medium" x-text="reportData?.connection_state?.cleanup_message"></p>
+                        </div>
+                    </div>
+
+                    <!-- Jump to Quotation Builder CTA Button -->
+                    <button 
+                        @click="activeNav = 'builder'; loadQuotationForConsumer(reportData.consumer_no);" 
+                        class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap"
+                    >
+                        <span>⚡ Build Solar Quotation Now</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- REPORT DATA SECTION (VISIBLE WHEN EXTRACTION COMPLETES) -->
+            <div x-show="reportData" x-cloak class="space-y-8">
+                <!-- CUSTOMER IDENTITY BANNER -->
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TNEB Verified Account</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight" x-text="reportData?.consumer_name"></h2>
+                        <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 font-mono">
+                            <span>Consumer #: <strong class="text-slate-900" x-text="reportData?.consumer_no"></strong></span>
+                            <span>•</span>
+                            <span>Section: <strong class="text-slate-900" x-text="reportData?.section"></strong></span>
+                            <span>•</span>
+                            <span>Tariff: <strong class="text-slate-900" x-text="reportData?.tariff_code"></strong></span>
+                            <span>•</span>
+                            <span>Load: <strong class="text-slate-900" x-text="reportData?.sanctioned_load + ' (' + reportData?.phase + ')'"></strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <button @click="activeNav = 'builder'; loadQuotationForConsumer(reportData.consumer_no);" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+                            <span>⚡ Open in Quotation Builder</span>
+                        </button>
+                        <a :href="'/api/export/' + reportData?.consumer_no + '/csv'" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition">
+                            Download CSV
+                        </a>
+                        <a :href="'/api/export/' + reportData?.consumer_no + '/markdown'" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition">
+                            Markdown
+                        </a>
+                    </div>
+                </section>
+
+                <!-- CONSUMPTION CHART SECTION -->
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900">Historical Consumption Profile</h3>
+                            <p class="text-xs text-slate-500">Chronological trend across up to 24 billing periods</p>
+                        </div>
+                        <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                            <button @click="activeChartMetric = 'units'; updateChart();" :class="activeChartMetric === 'units' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">Units (kWh)</button>
+                            <button @click="activeChartMetric = 'charges'; updateChart();" :class="activeChartMetric === 'charges' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">Bill (₹)</button>
+                            <button @click="activeChartMetric = 'demand'; updateChart();" :class="activeChartMetric === 'demand' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">Demand (kW)</button>
+                        </div>
+                    </div>
+                    <div class="h-64 sm:h-72 w-full">
+                        <canvas id="consumptionChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- DETAILED BILLING LEDGER TABLE -->
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900">Official Billing Cycles Ledger</h3>
+                            <p class="text-xs text-slate-500" x-text="(reportData?.billing_cycles?.length || 0) + ' records retrieved'"></p>
+                        </div>
+                        <input type="text" x-model="tableSearch" placeholder="Filter dates or receipt..." class="px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-50/75 text-slate-700 font-semibold">
+                                    <th class="py-2.5 px-3">Assessment Date</th>
+                                    <th class="py-2.5 px-3">Status</th>
+                                    <th class="py-2.5 px-3 text-right">Units (kWh)</th>
+                                    <th class="py-2.5 px-3 text-right">Demand (kW)</th>
+                                    <th class="py-2.5 px-3 text-right">CC Charges</th>
+                                    <th class="py-2.5 px-3">Paid Date</th>
+                                    <th class="py-2.5 px-3">Receipt No</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-mono">
+                                <template x-for="(cycle, idx) in filteredCycles()" :key="idx">
+                                    <tr class="hover:bg-slate-50/75 transition">
+                                        <td class="py-2.5 px-3 font-semibold text-slate-900" x-text="cycle.assessment_date"></td>
+                                        <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700" x-text="cycle.status"></span></td>
+                                        <td class="py-2.5 px-3 text-right font-bold text-slate-900" x-text="cycle.units_consumed"></td>
+                                        <td class="py-2.5 px-3 text-right" x-text="cycle.recorded_demand"></td>
+                                        <td class="py-2.5 px-3 text-right font-semibold text-emerald-700" x-text="'₹ ' + cycle.cc_charges"></td>
+                                        <td class="py-2.5 px-3 text-slate-500 font-sans" x-text="cycle.payment_date || '-'"></td>
+                                        <td class="py-2.5 px-3 text-slate-500" x-text="cycle.receipt_no || '-'"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 3. QUOTATION BUILDER & LIVE PREVIEW (MODULE C & D)                    -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'builder'" x-cloak class="space-y-6">
+            <!-- Builder Top Bar -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-amber-500/20">
+                        ⚡
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-slate-900 tracking-tight">Interactive Solar Quotation Builder</h2>
+                            <span class="text-[11px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full" x-text="currentQuotation?.quotation_no || 'RENSUN/DRAFT'"></span>
+                            <span class="text-[11px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full" x-text="'Status: ' + (currentQuotation?.status || 'Draft')"></span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Customer: <strong class="text-slate-800" x-text="currentQuotation?.customer_name || 'Select a consumer'"></strong>
+                            (Consumer #: <span class="font-mono text-brand-600" x-text="currentQuotation?.consumer_no"></span>)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Consumer Selector & Mode Toggle -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Consumer Picker Dropdown -->
+                    <select 
+                        @change="loadQuotationForConsumer($event.target.value)"
+                        class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white shadow-sm focus:ring-2 focus:ring-brand-500"
+                    >
+                        <option value="">-- Choose Consumer Account --</option>
+                        <template x-for="rep in savedReports" :key="rep.consumer_no">
+                            <option :value="rep.consumer_no" :selected="currentQuotation?.consumer_no === rep.consumer_no" x-text="rep.consumer_name + ' (' + rep.consumer_no + ')'"></option>
+                        </template>
+                    </select>
+
+                    <!-- Toggle: Custom Editor vs 3 Packages -->
+                    <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                        <button type="button" @click="builderTab = 'editor'" :class="builderTab === 'editor' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">Custom Proposal</button>
+                        <button type="button" @click="builderTab = 'packages'" :class="builderTab === 'packages' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">Compare 3 Packages</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State if no consumer quotation loaded -->
+            <div x-show="!currentQuotation" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center space-y-4">
+                <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
+                    📋
+                </div>
+                <h3 class="text-lg font-bold text-slate-900">No Consumer Quotation Loaded</h3>
+                <p class="text-sm text-slate-600 max-w-md mx-auto">Please select a previously extracted TNEB consumer from the dropdown above, or extract a new connection from the Extraction tab.</p>
+                <button @click="activeNav = 'extraction'" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow transition">Go to Consumer Extraction →</button>
+            </div>
+
+            <!-- Main Builder Content (Visible when quotation is loaded) -->
+            <div x-show="currentQuotation" class="space-y-6">
+                <!-- Action Controls Bar -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="resetToRecommended()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg border border-slate-200 transition flex items-center gap-1.5">
+                            <span>↺ Reset to Recommended</span>
+                        </button>
+                        <button type="button" @click="saveQuotation('Draft')" :disabled="isSavingQuotation" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg border border-slate-200 transition flex items-center gap-1.5">
+                            <span x-show="!isSavingQuotation">💾 Save as Draft</span>
+                            <span x-show="isSavingQuotation" class="animate-spin">⟳</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="saveQuotation('Finalized')" :disabled="isSavingQuotation" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+                            <span>✓ Finalize Quotation</span>
+                        </button>
+                        <button type="button" @click="generateAndDownloadPdf()" :disabled="isGeneratingPdf" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/25 transition flex items-center gap-1.5">
+                            <span x-show="!isGeneratingPdf">📥 Download PDF (5 Pages)</span>
+                            <span x-show="isGeneratingPdf" class="flex items-center gap-1.5">
+                                <span class="animate-spin">⟳</span>
+                                <span>Compiling PDF...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 1: SPLIT SCREEN (LEFT CONTROLS + RIGHT LIVE PREVIEW) -->
+                <div x-show="builderTab === 'editor'" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    <!-- LEFT PANEL: SALESPERSON ADJUSTMENT CONTROLS (Col 5) -->
+                    <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-base text-slate-900 tracking-tight flex items-center gap-2">
+                                <span>🛠️ System & Pricing Controls</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Live modifications recalculate preview instantly</p>
+                        </div>
+
+                        <!-- 1. SOLAR CAPACITY ADJUSTMENT -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-800 uppercase tracking-wider">System Capacity (kW)</label>
+                                <span class="text-sm font-mono font-extrabold text-brand-600" x-text="builderOverrides.system_capacity_kw + ' kW'"></span>
+                            </div>
+                            <input 
+                                type="range" 
+                                min="1.0" 
+                                max="15.0" 
+                                step="0.5" 
+                                x-model.number="builderOverrides.system_capacity_kw" 
+                                @input="recalculateLive()"
+                                class="w-full accent-brand-600 cursor-pointer"
+                            >
+                            <div class="flex items-center justify-between text-[11px] text-slate-500">
+                                <span>Min: 1.0 kW</span>
+                                <span class="font-semibold text-emerald-600" x-text="'Recommended: ' + (currentQuotation?.recommended_capacity_kw || 2.0) + ' kW'"></span>
+                                <span>Max: 15.0 kW</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. PANEL WATTAGE & QUANTITY -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Panel Wattage (Wp)</label>
+                                <select 
+                                    x-model.number="builderOverrides.panel_wattage_wp" 
+                                    @change="recalculateLive()"
+                                    class="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                                >
+                                    <option value="540">540 Wp (Waaree Mono)</option>
+                                    <option value="550">550 Wp (Bifacial)</option>
+                                    <option value="580">580 Wp (N-Type TOPCon)</option>
+                                    <option value="600">600 Wp (High Density)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Calculated Panels</label>
+                                <div class="px-3 py-2 bg-slate-50 text-xs font-mono font-bold rounded-xl border border-slate-200 text-slate-800 flex items-center justify-between">
+                                    <span x-text="currentQuotation?.panel?.quantity + ' Panels'"></span>
+                                    <span class="text-[10px] text-slate-500" x-text="'(' + currentQuotation?.system_capacity_kw + ' kWp)'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. INVERTER CAPACITY -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Inverter Capacity (kW)</label>
+                            <select 
+                                x-model.number="builderOverrides.inverter_capacity_kw" 
+                                @change="recalculateLive()"
+                                class="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                            >
+                                <option value="1.0">1.0 kW (Single Phase)</option>
+                                <option value="2.0">2.0 kW (Single Phase)</option>
+                                <option value="3.0">3.0 kW (Single Phase)</option>
+                                <option value="4.0">4.0 kW (Single / 3-Phase)</option>
+                                <option value="5.0">5.0 kW (Three Phase)</option>
+                                <option value="6.0">6.0 kW (Three Phase)</option>
+                                <option value="8.0">8.0 kW (Three Phase)</option>
+                                <option value="10.0">10.0 kW (Three Phase)</option>
+                            </select>
+                        </div>
+
+                        <!-- 4. COMMERCIAL RATE & DISCOUNTS -->
+                        <div class="border-t border-slate-100 pt-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Commercial Pricing & Discounts</h4>
+                            
+                            <!-- Price per kW override -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Price per kW (₹ / kW)</label>
+                                <input 
+                                    type="number" 
+                                    x-model.number="builderOverrides.price_per_kw" 
+                                    @input="recalculateLive()"
+                                    class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                                >
+                            </div>
+
+                            <!-- Discount Fields -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Flat Discount (₹)</label>
+                                    <input 
+                                        type="number" 
+                                        x-model.number="builderOverrides.discount_amount" 
+                                        @input="recalculateLive()"
+                                        placeholder="0"
+                                        class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Discount (%)</label>
+                                    <input 
+                                        type="number" 
+                                        x-model.number="builderOverrides.discount_percent" 
+                                        @input="recalculateLive()"
+                                        placeholder="0"
+                                        class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Subsidy Eligibility Toggle -->
+                            <label class="flex items-center justify-between text-xs font-semibold text-slate-700 cursor-pointer pt-1">
+                                <span>Apply PM Surya Ghar Subsidy</span>
+                                <input 
+                                    type="checkbox" 
+                                    x-model="builderOverrides.subsidy_applicable" 
+                                    @change="recalculateLive()"
+                                    class="rounded text-brand-600 focus:ring-brand-500 h-4 w-4"
+                                >
+                            </label>
+                        </div>
+
+                        <!-- 5. COMMERCIAL TERMS -->
+                        <div class="border-t border-slate-100 pt-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Commercial Terms</h4>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Quotation Validity (Days)</label>
+                                <input 
+                                    type="number" 
+                                    x-model.number="builderOverrides.quotation_validity_days" 
+                                    @input="recalculateLive()"
+                                    class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Custom Payment Terms</label>
+                                <textarea 
+                                    x-model="builderOverrides.payment_terms" 
+                                    @input="recalculateLive()"
+                                    rows="2" 
+                                    class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- RIGHT PANEL: LIVE QUOTATION PRESENTATION PREVIEW (Col 7) -->
+                    <div class="lg:col-span-7 bg-white rounded-2xl border-2 border-slate-300 shadow-xl p-6 sm:p-8 space-y-6">
+                        
+                        <!-- Quotation Document Header -->
+                        <div class="border-b-2 border-slate-200 pb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold text-base">⚡</div>
+                                    <h3 class="font-extrabold text-lg text-teal-800" x-text="currentQuotation?.branding?.company_name"></h3>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5" x-text="currentQuotation?.branding?.tagline"></p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-mono font-bold text-slate-900" x-text="currentQuotation?.quotation_no"></div>
+                                <div class="text-[11px] text-slate-500" x-text="currentQuotation?.quotation_date"></div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Details Strip -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <span class="text-slate-500 text-[11px]">Customer Name:</span>
+                                <div class="font-bold text-slate-900 text-sm" x-text="currentQuotation?.customer_name"></div>
+                                <div class="text-slate-600 text-[11px] mt-0.5" x-text="currentQuotation?.address"></div>
+                            </div>
+                            <div class="text-right font-mono">
+                                <span class="text-slate-500 text-[11px] font-sans">TNEB Consumer No:</span>
+                                <div class="font-bold text-brand-600 text-sm" x-text="currentQuotation?.consumer_no"></div>
+                                <div class="text-slate-600 text-[11px] font-sans" x-text="currentQuotation?.tariff_category + ' • Load ' + currentQuotation?.sanctioned_load_kw + ' kW'"></div>
+                            </div>
+                        </div>
+
+                        <!-- Proposed System Highlights -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold text-teal-700 uppercase tracking-wider">PV Capacity</span>
+                                <div class="text-xl font-extrabold text-teal-900 mt-1" x-text="currentQuotation?.system_capacity_kw + ' kW'"></div>
+                                <span class="text-[10px] text-teal-600 font-mono" x-text="currentQuotation?.panel?.quantity + ' × ' + currentQuotation?.panel?.wattage_wp + 'W'"></span>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Inverter</span>
+                                <div class="text-xl font-extrabold text-amber-900 mt-1" x-text="currentQuotation?.inverter?.capacity_kw + ' kW'"></div>
+                                <span class="text-[10px] text-amber-600 font-mono">Grid-Tied</span>
+                            </div>
+                            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Annual Yield</span>
+                                <div class="text-xl font-extrabold text-indigo-900 mt-1" x-text="formatNum(currentQuotation?.generation?.estimated_annual_generation_kwh)"></div>
+                                <span class="text-[10px] text-indigo-600">kWh / year</span>
+                            </div>
+                            <div class="bg-slate-100 border border-slate-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Roof Space</span>
+                                <div class="text-xl font-extrabold text-slate-900 mt-1" x-text="'~' + currentQuotation?.sizing?.approx_roof_area_sqft"></div>
+                                <span class="text-[10px] text-slate-600">sq.ft needed</span>
+                            </div>
+                        </div>
+
+                        <!-- Commercial Pricing & Subsidy Summary -->
+                        <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg space-y-4">
+                            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                                <span>Commercial Summary & Net Investment</span>
+                                <span class="text-emerald-400 font-mono" x-text="'Rate: ₹ ' + currentQuotation?.pricing?.rate_per_kw + '/kW'"></span>
+                            </div>
+
+                            <div class="space-y-2 text-xs border-b border-slate-800 pb-4">
+                                <div class="flex justify-between text-slate-300">
+                                    <span>Base System Turnkey Cost:</span>
+                                    <span class="font-mono font-semibold" x-text="formatInr(currentQuotation?.pricing?.base_system_cost)"></span>
+                                </div>
+                                <div x-show="currentQuotation?.pricing?.discount_amount > 0" class="flex justify-between text-rose-400 font-semibold">
+                                    <span>Commercial Discount:</span>
+                                    <span class="font-mono" x-text="'- ' + formatInr(currentQuotation?.pricing?.discount_amount)"></span>
+                                </div>
+                                <div class="flex justify-between text-slate-300">
+                                    <span>GST (@ <span x-text="currentQuotation?.pricing?.gst_rate_percent"></span>%):</span>
+                                    <span class="font-mono font-semibold" x-text="formatInr(currentQuotation?.pricing?.gst_amount)"></span>
+                                </div>
+                                <div class="flex justify-between text-slate-100 font-bold pt-1 border-t border-slate-800">
+                                    <span>Gross Contract Price:</span>
+                                    <span class="font-mono" x-text="formatInr(currentQuotation?.pricing?.gross_contract_value)"></span>
+                                </div>
+                                <div x-show="currentQuotation?.pricing?.subsidy_amount > 0" class="flex justify-between text-emerald-400 font-bold">
+                                    <span>PM Surya Ghar Subsidy (DBT):</span>
+                                    <span class="font-mono" x-text="'- ' + formatInr(currentQuotation?.pricing?.subsidy_amount)"></span>
+                                </div>
+                            </div>
+
+                            <!-- Final Net Investment Highlight -->
+                            <div class="flex items-center justify-between pt-1">
+                                <div>
+                                    <span class="text-xs uppercase text-slate-400 font-semibold">Net Customer Investment</span>
+                                    <p class="text-[11px] text-slate-400">Total payable post-subsidy credit</p>
+                                </div>
+                                <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono" x-text="formatInr(currentQuotation?.pricing?.net_customer_payable)"></div>
+                            </div>
+                        </div>
+
+                        <!-- Financial Returns & Payback Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 text-[10px] uppercase font-bold">Year 1 Savings</span>
+                                <div class="text-base font-bold text-slate-900 mt-1" x-text="formatInr(currentQuotation?.financials?.year_1_annual_savings_rs)"></div>
+                                <span class="text-[10px] text-emerald-600 font-semibold" x-text="'~' + formatInr(currentQuotation?.financials?.monthly_average_savings_rs) + ' / mo'"></span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 text-[10px] uppercase font-bold">Payback Period</span>
+                                <div class="text-base font-bold text-slate-900 mt-1" x-text="currentQuotation?.financials?.simple_payback_years + ' Years'"></div>
+                                <span class="text-[10px] text-slate-500">Break-even</span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 text-[10px] uppercase font-bold">25-Yr Net Savings</span>
+                                <div class="text-base font-bold text-emerald-700 mt-1" x-text="formatInr(currentQuotation?.financials?.total_25_year_savings_rs)"></div>
+                                <span class="text-[10px] text-slate-500">Cumulative</span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <span class="text-slate-500 text-[10px] uppercase font-bold">Estimated ROI</span>
+                                <div class="text-base font-bold text-indigo-700 mt-1" x-text="currentQuotation?.financials?.roi_percent + '%'"></div>
+                                <span class="text-[10px] text-slate-500">Lifetime Return</span>
+                            </div>
+                        </div>
+
+                        <!-- Warranties Strip -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-1">
+                            <div class="font-bold text-slate-800 text-[11px] uppercase tracking-wider mb-2">Equipment Warranties Included:</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
+                                <div>• <strong>Panels:</strong> 12 Yrs Product • 25 Yrs Performance (84.8%)</div>
+                                <div>• <strong>Inverter:</strong> <span x-text="currentQuotation?.inverter?.warranty_years"></span> Years Replacement Warranty</div>
+                                <div>• <strong>Structure:</strong> 10 Years Hot-Dip Galvanized Anti-Rust</div>
+                                <div>• <strong>Workmanship:</strong> 5 Years Free Maintenance & Service</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- TAB 2: THREE PACKAGES COMPARISON (ECONOMY vs RECOMMENDED vs PREMIUM) -->
+                <div x-show="builderTab === 'packages'" class="space-y-6">
+                    <div class="text-center max-w-2xl mx-auto space-y-1">
+                        <h3 class="text-xl font-bold text-slate-900">Tiered Solar PV Package Comparison</h3>
+                        <p class="text-xs text-slate-600">Side-by-side technical & commercial evaluation tailored to consumer's demand.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                        
+                        <!-- ECONOMY PACKAGE -->
+                        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">VALUE OPTION</span>
+                                    <h4 class="text-lg font-bold text-slate-900 mt-1">Economy Package</h4>
+                                    <p class="text-xs text-slate-500">Cost-effective standard tier</p>
+                                </div>
+                                <div class="py-3 border-y border-slate-100">
+                                    <div class="text-2xl font-extrabold text-slate-900" x-text="formatInr(currentQuotation?.packages?.economy?.pricing?.net_payable_amount)"></div>
+                                    <span class="text-[11px] text-slate-500" x-text="'Rate: ₹ ' + currentQuotation?.packages?.economy?.pricing?.price_per_kw + ' / kW'"></span>
+                                </div>
+                                <ul class="text-xs text-slate-600 space-y-2">
+                                    <li>• <strong>Panels:</strong> Vikram Solar 540 Wp Mono PERC</li>
+                                    <li>• <strong>Capacity:</strong> <span x-text="currentQuotation?.packages?.economy?.system_capacity_kw + ' kWp'"></span></li>
+                                    <li>• <strong>Inverter:</strong> Growatt 5-Year Warranty</li>
+                                    <li>• <strong>Structure:</strong> HDG 80 Micron Standard Mount</li>
+                                    <li>• <strong>Subsidy:</strong> <span class="text-emerald-600 font-semibold" x-text="formatInr(currentQuotation?.packages?.economy?.pricing?.subsidy_amount)"></span></li>
+                                </ul>
+                            </div>
+                            <button @click="selectPackage('economy')" class="mt-6 w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl transition">
+                                Apply Economy Spec
+                            </button>
+                        </div>
+
+                        <!-- RECOMMENDED PACKAGE (HIGHLIGHTED) -->
+                        <div class="bg-white rounded-2xl border-2 border-emerald-500 p-6 flex flex-col justify-between shadow-xl relative scale-105 z-10">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow">
+                                ★ ENGINEERING RECOMMENDED
+                            </div>
+                            <div class="space-y-4 mt-2">
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">BEST VALUE & EFFICIENCY</span>
+                                    <h4 class="text-xl font-extrabold text-slate-900 mt-1">Recommended Package</h4>
+                                    <p class="text-xs text-slate-500">Optimal yield, bifacial dual-glass</p>
+                                </div>
+                                <div class="py-3 border-y border-emerald-100 bg-emerald-50/50 rounded-xl px-3">
+                                    <div class="text-3xl font-extrabold text-emerald-800" x-text="formatInr(currentQuotation?.packages?.recommended?.pricing?.net_payable_amount)"></div>
+                                    <span class="text-[11px] text-emerald-700 font-semibold" x-text="'Rate: ₹ ' + currentQuotation?.packages?.recommended?.pricing?.price_per_kw + ' / kW'"></span>
+                                </div>
+                                <ul class="text-xs text-slate-700 space-y-2">
+                                    <li>• <strong>Panels:</strong> Waaree 550 Wp Bifacial Dual-Glass</li>
+                                    <li>• <strong>Capacity:</strong> <span class="font-bold text-emerald-700" x-text="currentQuotation?.packages?.recommended?.system_capacity_kw + ' kWp'"></span></li>
+                                    <li>• <strong>Inverter:</strong> Solis Dual MPPT (7-Yr Warranty)</li>
+                                    <li>• <strong>Structure:</strong> High-Tensile HDG & Marine Aluminum</li>
+                                    <li>• <strong>Subsidy:</strong> <span class="text-emerald-700 font-bold" x-text="formatInr(currentQuotation?.packages?.recommended?.pricing?.subsidy_amount)"></span></li>
+                                </ul>
+                            </div>
+                            <button @click="selectPackage('recommended')" class="mt-6 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">
+                                Apply Recommended Spec
+                            </button>
+                        </div>
+
+                        <!-- PREMIUM PACKAGE -->
+                        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">MAXIMUM PERFORMANCE</span>
+                                    <h4 class="text-lg font-bold text-slate-900 mt-1">Premium TOPCon</h4>
+                                    <p class="text-xs text-slate-500">N-Type TOPCon & 30-Year Performance</p>
+                                </div>
+                                <div class="py-3 border-y border-slate-100">
+                                    <div class="text-2xl font-extrabold text-slate-900" x-text="formatInr(currentQuotation?.packages?.premium?.pricing?.net_payable_amount)"></div>
+                                    <span class="text-[11px] text-slate-500" x-text="'Rate: ₹ ' + currentQuotation?.packages?.premium?.pricing?.price_per_kw + ' / kW'"></span>
+                                </div>
+                                <ul class="text-xs text-slate-600 space-y-2">
+                                    <li>• <strong>Panels:</strong> Jinko / Adani 580 Wp N-Type TOPCon</li>
+                                    <li>• <strong>Capacity:</strong> <span x-text="currentQuotation?.packages?.premium?.system_capacity_kw + ' kWp'"></span></li>
+                                    <li>• <strong>Inverter:</strong> Sungrow Smart Hybrid-Ready (10-Yr)</li>
+                                    <li>• <strong>Structure:</strong> Elevated Walkway SuperDyma</li>
+                                    <li>• <strong>Warranty:</strong> 30 Years Linear Power Guarantee</li>
+                                </ul>
+                            </div>
+                            <button @click="selectPackage('premium')" class="mt-6 w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl transition">
+                                Apply Premium Spec
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 4. QUOTATION HISTORY SECTION (MODULE G)                               -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'history'" x-cloak class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Saved Quotation Proposals & Versions</h2>
+                        <p class="text-xs text-slate-500 mt-1">Immutable historical record of generated, revised, and finalized customer quotations.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" x-model="historySearch" placeholder="Search quotation or customer..." class="px-3.5 py-2 text-xs rounded-xl border border-slate-300 w-64 shadow-sm focus:ring-2 focus:ring-brand-500">
+                        <button @click="fetchQuotationHistory()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition">⟳ Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Quotation History Table -->
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50/75 text-slate-700 font-semibold">
+                                <th class="py-3 px-4">Quotation Ref</th>
+                                <th class="py-3 px-4">Customer Name</th>
+                                <th class="py-3 px-4">Consumer No</th>
+                                <th class="py-3 px-4 text-center">System (kW)</th>
+                                <th class="py-3 px-4 text-right">Net Payable</th>
+                                <th class="py-3 px-4 text-center">Version</th>
+                                <th class="py-3 px-4 text-center">Status</th>
+                                <th class="py-3 px-4">Updated</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-for="q in filteredQuotations()" :key="q.quotation_no">
+                                <tr class="hover:bg-slate-50/75 transition">
+                                    <td class="py-3 px-4 font-mono font-bold text-brand-600" x-text="q.quotation_no"></td>
+                                    <td class="py-3 px-4 font-semibold text-slate-900" x-text="q.customer_name"></td>
+                                    <td class="py-3 px-4 font-mono text-slate-600" x-text="q.consumer_no"></td>
+                                    <td class="py-3 px-4 text-center font-bold text-slate-900" x-text="q.system_capacity_kw + ' kW'"></td>
+                                    <td class="py-3 px-4 text-right font-mono font-bold text-emerald-700" x-text="formatInr(q.net_payable_amount)"></td>
+                                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px]" x-text="'v' + q.version"></span></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <select 
+                                            @change="updateQuotationStatus(q.quotation_no, $event.target.value)"
+                                            class="text-[11px] font-semibold rounded-lg px-2 py-1 border border-slate-200 cursor-pointer"
+                                            :class="{
+                                                'bg-amber-50 text-amber-800 border-amber-200': q.status === 'Draft',
+                                                'bg-blue-50 text-blue-800 border-blue-200': q.status === 'Presented',
+                                                'bg-emerald-50 text-emerald-800 border-emerald-200': q.status === 'Finalized' || q.status === 'Accepted',
+                                                'bg-rose-50 text-rose-800 border-rose-200': q.status === 'Rejected'
+                                            }"
+                                        >
+                                            <option value="Draft" :selected="q.status === 'Draft'">Draft</option>
+                                            <option value="Presented" :selected="q.status === 'Presented'">Presented</option>
+                                            <option value="Finalized" :selected="q.status === 'Finalized'">Finalized</option>
+                                            <option value="Accepted" :selected="q.status === 'Accepted'">Accepted</option>
+                                            <option value="Rejected" :selected="q.status === 'Rejected'">Rejected</option>
+                                        </select>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-500 text-[11px]" x-text="q.updated_at"></td>
+                                    <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                                        <button @click="reopenQuotation(q.quotation_no)" class="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg font-semibold transition">
+                                            Reopen
+                                        </button>
+                                        <a :href="'/api/quotations/' + q.quotation_no.replace('/', '_').replace('/', '_') + '/download'" target="_blank" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold transition">
+                                            PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredQuotations().length === 0">
+                                <td colspan="9" class="py-8 text-center text-slate-500">No quotation proposals recorded yet. Generate one from the Quotation Builder.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 5. OWNER QUOTATION SETTINGS SECTION (MODULE A & SECURITY)             -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'settings'" x-cloak class="space-y-6">
+            
+            <!-- ADMIN PIN UNLOCK CARD (SHOWN IF NOT AUTHENTICATED) -->
+            <div x-show="!ownerAuthenticated" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md mx-auto text-center space-y-4">
+                <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
+                    🔒
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tight">Owner Configuration Authentication</h3>
+                <p class="text-xs text-slate-600">Access to pricing models, profit margins, GST settings and branding requires administrative authentication.</p>
+
+                <form @submit.prevent="authenticateOwner()" class="space-y-3 pt-2">
+                    <input 
+                        type="password" 
+                        x-model="ownerPinInput" 
+                        placeholder="Enter Owner PIN (Default: admin123)" 
+                        class="w-full px-4 py-2.5 text-center text-sm font-mono tracking-widest rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500"
+                        required
+                    >
+                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition">
+                        Unlock Settings
+                    </button>
+                    <p x-show="ownerAuthError" class="text-xs text-rose-600 font-semibold" x-text="ownerAuthError"></p>
+                </form>
+            </div>
+
+            <!-- OWNER SETTINGS INTERFACE (SHOWN WHEN AUTHENTICATED) -->
+            <div x-show="ownerAuthenticated" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+                <!-- Header with Save & Reset -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h2 class="text-xl font-bold text-slate-900 tracking-tight">Owner Commercial Settings & Product Catalogue</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Persistent configuration applied as defaults for all newly generated customer quotations.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="resetOwnerSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                            ↺ Reset to Defaults
+                        </button>
+                        <button type="button" @click="saveOwnerSettings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">
+                            <span>💾 Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Sub-Navigation Tabs -->
+                <div class="flex overflow-x-auto space-x-1 border-b border-slate-200 pb-2 text-xs font-semibold">
+                    <button type="button" @click="ownerActiveTab = 'panel'" :class="ownerActiveTab === 'panel' ? 'border-b-2 border-brand-600 text-brand-600 pb-2' : 'text-slate-600 hover:text-slate-900'" class="px-3 py-1">Solar Panels</button>
+                    <button type="button" @click="ownerActiveTab = 'pricing'" :class="ownerActiveTab === 'pricing' ? 'border-b-2 border-brand-600 text-brand-600 pb-2' : 'text-slate-600 hover:text-slate-900'" class="px-3 py-1">Commercial Pricing</button>
+                    <button type="button" @click="ownerActiveTab = 'branding'" :class="ownerActiveTab === 'branding' ? 'border-b-2 border-brand-600 text-brand-600 pb-2' : 'text-slate-600 hover:text-slate-900'" class="px-3 py-1">Branding & Logo</button>
+                    <button type="button" @click="ownerActiveTab = 'inverter'" :class="ownerActiveTab === 'inverter' ? 'border-b-2 border-brand-600 text-brand-600 pb-2' : 'text-slate-600 hover:text-slate-900'" class="px-3 py-1">Inverter & System Type</button>
+                    <button type="button" @click="ownerActiveTab = 'terms'" :class="ownerActiveTab === 'terms' ? 'border-b-2 border-brand-600 text-brand-600 pb-2' : 'text-slate-600 hover:text-slate-900'" class="px-3 py-1">Warranties & Terms</button>
+                </div>
+
+                <!-- SUB-TAB A: SOLAR PANELS CONFIGURATION -->
+                <div x-show="ownerActiveTab === 'panel'" class="space-y-4 max-w-3xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Panel Manufacturer</label>
+                            <input type="text" x-model="ownerSettings.panel.manufacturer" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Panel Model</label>
+                            <input type="text" x-model="ownerSettings.panel.model" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Default Panel Wattage (Wp)</label>
+                            <input type="number" x-model.number="ownerSettings.panel.wattage_wp" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Cell Technology</label>
+                            <input type="text" x-model="ownerSettings.panel.technology" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Product Warranty (Years)</label>
+                            <input type="number" x-model.number="ownerSettings.panel.product_warranty_years" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Performance Warranty (Years)</label>
+                            <input type="number" x-model.number="ownerSettings.panel.performance_warranty_years" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB B: COMMERCIAL PRICING -->
+                <div x-show="ownerActiveTab === 'pricing'" class="space-y-4 max-w-3xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pricing Model</label>
+                            <select x-model="ownerSettings.pricing.pricing_model" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 font-semibold">
+                                <option value="bundled_per_kw">Bundled Price per kW</option>
+                                <option value="itemized">Itemized Component BOQ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Turnkey Price per kW (₹ / kW)</label>
+                            <input type="number" x-model.number="ownerSettings.pricing.price_per_kw" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">GST Rate (%)</label>
+                            <input type="number" x-model.number="ownerSettings.pricing.gst_rate_percent" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                        <div class="flex items-center pt-5">
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" x-model="ownerSettings.pricing.price_per_kw_includes_gst" class="rounded text-brand-600 h-4 w-4">
+                                <span>Price per kW includes GST</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB C: BRANDING & LOGO -->
+                <div x-show="ownerActiveTab === 'branding'" class="space-y-4 max-w-3xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Company Brand Name</label>
+                            <input type="text" x-model="ownerSettings.branding.company_name" class="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Company Tagline</label>
+                            <input type="text" x-model="ownerSettings.branding.tagline" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Company Address</label>
+                            <input type="text" x-model="ownerSettings.branding.address" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                            <input type="text" x-model="ownerSettings.branding.phone" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+                            <input type="text" x-model="ownerSettings.branding.email" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Website URL</label>
+                            <input type="text" x-model="ownerSettings.branding.website" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">GSTIN Number</label>
+                            <input type="text" x-model="ownerSettings.branding.gstin" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Authorized Signatory Name</label>
+                            <input type="text" x-model="ownerSettings.branding.authorized_signatory" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Signatory Title</label>
+                            <input type="text" x-model="ownerSettings.branding.signatory_title" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB D: INVERTER & SYSTEM TYPE -->
+                <div x-show="ownerActiveTab === 'inverter'" class="space-y-4 max-w-3xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">System Type</label>
+                            <select x-model="ownerSettings.system.system_type" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300">
+                                <option value="on-grid">On-Grid Rooftop PV</option>
+                                <option value="hybrid">Hybrid (Solar + Battery)</option>
+                                <option value="off-grid">Off-Grid Independent</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Inverter Manufacturer</label>
+                            <input type="text" x-model="ownerSettings.inverter.manufacturer" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Inverter Model</label>
+                            <input type="text" x-model="ownerSettings.inverter.model" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Inverter Warranty (Years)</label>
+                            <input type="number" x-model.number="ownerSettings.inverter.warranty_years" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB E: WARRANTIES & TERMS -->
+                <div x-show="ownerActiveTab === 'terms'" class="space-y-4 max-w-3xl">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Module Product Warranty Statement</label>
+                            <input type="text" x-model="ownerSettings.warranty.module_product_warranty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Module Performance Warranty Statement</label>
+                            <input type="text" x-model="ownerSettings.warranty.module_performance_warranty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Inverter Warranty Statement</label>
+                            <input type="text" x-model="ownerSettings.warranty.inverter_warranty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Structure Warranty Statement</label>
+                            <input type="text" x-model="ownerSettings.warranty.mounting_structure_warranty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Workmanship & Service Warranty</label>
+                            <input type="text" x-model="ownerSettings.warranty.workmanship_warranty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Terms</label>
+                            <textarea x-model="ownerSettings.commercial_terms.payment_terms" rows="2" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SAVED REPORTS MODAL (EXISTING) -->
+    <div x-show="showHistoryModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showHistoryModal = false" class="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Previously Extracted TNEB Reports</h3>
+                <button @click="showHistoryModal = false" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+            </div>
+            <div class="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                <template x-for="r in savedReports" :key="r.consumer_no">
+                    <div class="py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-xl transition">
+                        <div>
+                            <div class="font-bold text-sm text-slate-900" x-text="r.consumer_name"></div>
+                            <div class="text-xs font-mono text-slate-500" x-text="'SC #: ' + r.consumer_no + ' • ' + r.tariff"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="loadSample(r.consumer_no); showHistoryModal = false;" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">View Data</button>
+                            <button @click="activeNav = 'builder'; loadQuotationForConsumer(r.consumer_no); showHistoryModal = false;" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition">⚡ Build Quote</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT & ALPINE APPLICATION STATE -->
+    <script>
+        function tnebApp() {
+            return {
+                // Navigation state
+                activeNav: 'extraction',
+                
+                // Credentials & Extraction state
+                userId: '',
+                password: '',
+                consumerNo: '',
+                deleteAfter: true,
+                showPassword: false,
+                isLoading: false,
+                activeUserId: '',
+                activeConsumer: '',
+                errorMessage: '',
+                errorTitle: '',
+                liveLogs: [],
+                stepsStatus: { login: 'pending', add: 'pending', summary: 'pending', report: 'pending', delete: 'pending' },
+                reportData: null,
+                savedReports: [],
+                tableSearch: '',
+                activeChartMetric: 'units',
+                chartInstance: null,
+                showHistoryModal: false,
+
+                // Quotation Builder State
+                currentQuotation: null,
+                builderTab: 'editor',
+                builderOverrides: {
+                    system_capacity_kw: 2.0,
+                    panel_wattage_wp: 540,
+                    inverter_capacity_kw: 2.0,
+                    price_per_kw: 52000,
+                    discount_amount: 0,
+                    discount_percent: 0,
+                    subsidy_applicable: true,
+                    quotation_validity_days: 15,
+                    payment_terms: ''
+                },
+                isSavingQuotation: false,
+                isGeneratingPdf: false,
+
+                // Quotation History State
+                quotationHistory: [],
+                historySearch: '',
+
+                // Owner Settings State
+                ownerAuthenticated: false,
+                ownerPinInput: '',
+                ownerAuthError: '',
+                ownerActiveTab: 'panel',
+                ownerSettings: {
+                    panel: { manufacturer: '', model: '', wattage_wp: 540, technology: '', product_warranty_years: 12, performance_warranty_years: 25 },
+                    pricing: { pricing_model: 'bundled_per_kw', price_per_kw: 52000, gst_rate_percent: 12.0, price_per_kw_includes_gst: false },
+                    branding: { company_name: '', tagline: '', address: '', phone: '', email: '', website: '', gstin: '', authorized_signatory: '', signatory_title: '' },
+                    system: { system_type: 'on-grid' },
+                    inverter: { manufacturer: '', model: '', capacity_kw: 3.0, warranty_years: 5 },
+                    warranty: { module_product_warranty: '', module_performance_warranty: '', inverter_warranty: '', mounting_structure_warranty: '', workmanship_warranty: '' },
+                    commercial_terms: { payment_terms: '', quotation_validity_days: 15 }
+                },
+
+                initApp() {
+                    this.fetchSavedReports();
+                    this.fetchQuotationHistory();
+                    this.loadSettings();
+
+                    // Check session storage for admin token
+                    const token = sessionStorage.getItem('owner_token');
+                    if (token) {
+                        this.ownerAuthenticated = true;
+                    }
+                },
+
+                async fetchSavedReports() {
+                    try {
+                        const res = await fetch('/api/reports');
+                        const data = await res.json();
+                        this.savedReports = data.reports || [];
+                    } catch (e) {
+                        console.error('Error fetching reports:', e);
+                    }
+                },
+
+                async fetchQuotationHistory() {
+                    try {
+                        const res = await fetch('/api/quotations');
+                        const data = await res.json();
+                        this.quotationHistory = data.quotations || [];
+                    } catch (e) {
+                        console.error('Error fetching quotation history:', e);
+                    }
+                },
+
+                filteredQuotations() {
+                    const q = (this.historySearch || '').toLowerCase().trim();
+                    if (!q) return this.quotationHistory;
+                    return this.quotationHistory.filter(item => 
+                        (item.quotation_no || '').toLowerCase().includes(q) ||
+                        (item.customer_name || '').toLowerCase().includes(q) ||
+                        (item.consumer_no || '').toLowerCase().includes(q)
+                    );
+                },
+
+                getTotalProposedKw() {
+                    return this.quotationHistory.reduce((acc, q) => acc + (parseFloat(q.system_capacity_kw) || 0), 0).toFixed(1);
+                },
+
+                async loadSettings() {
+                    try {
+                        const token = sessionStorage.getItem('owner_token') || '';
+                        const headers = token ? { 'X-Owner-Token': token } : {};
+                        const res = await fetch('/api/settings', { headers });
+                        const data = await res.json();
+                        if (data.settings) {
+                            this.ownerSettings = data.settings;
+                        }
+                    } catch (e) {
+                        console.error('Error loading settings:', e);
+                    }
+                },
+
+                async authenticateOwner() {
+                    this.ownerAuthError = '';
+                    try {
+                        const res = await fetch('/api/settings/auth', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pin: this.ownerPinInput })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.token) {
+                            sessionStorage.setItem('owner_token', data.token);
+                            this.ownerAuthenticated = true;
+                            this.ownerPinInput = '';
+                            this.loadSettings();
+                        } else {
+                            this.ownerAuthError = data.detail || 'Invalid PIN';
+                        }
+                    } catch (e) {
+                        this.ownerAuthError = 'Authentication request failed.';
+                    }
+                },
+
+                async saveOwnerSettings() {
+                    const token = sessionStorage.getItem('owner_token') || '';
+                    try {
+                        const res = await fetch('/api/settings', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-Owner-Token': token
+                            },
+                            body: JSON.stringify(this.ownerSettings)
+                        });
+                        if (res.ok) {
+                            alert('Owner settings saved persistently!');
+                        } else {
+                            const err = await res.json();
+                            alert('Save failed: ' + (err.detail || 'Unknown error'));
+                        }
+                    } catch (e) {
+                        alert('Error saving settings: ' + e);
+                    }
+                },
+
+                async resetOwnerSettings() {
+                    if (!confirm('Are you sure you want to reset all owner settings to factory defaults?')) return;
+                    const token = sessionStorage.getItem('owner_token') || '';
+                    try {
+                        const res = await fetch('/api/settings/reset', {
+                            method: 'POST',
+                            headers: { 'X-Owner-Token': token }
+                        });
+                        const data = await res.json();
+                        if (data.settings) {
+                            this.ownerSettings = data.settings;
+                            alert('Settings reset to defaults.');
+                        }
+                    } catch (e) {
+                        alert('Reset failed: ' + e);
+                    }
+                },
+
+                // QUOTATION BUILDER METHODS
+                async loadQuotationForConsumer(consumerNo) {
+                    if (!consumerNo) return;
+                    try {
+                        const res = await fetch('/api/quotation/generate/' + encodeURIComponent(consumerNo));
+                        if (!res.ok) {
+                            const err = await res.json();
+                            alert('Could not generate quotation: ' + (err.detail || 'Consumer report not found'));
+                            return;
+                        }
+                        const q = await res.json();
+                        this.currentQuotation = q;
+                        this.builderOverrides = {
+                            system_capacity_kw: q.system_capacity_kw,
+                            panel_wattage_wp: q.panel.wattage_wp,
+                            inverter_capacity_kw: q.inverter.capacity_kw,
+                            price_per_kw: q.pricing.rate_per_kw,
+                            discount_amount: q.pricing.discount_amount || 0,
+                            discount_percent: q.pricing.discount_percent || 0,
+                            subsidy_applicable: q.pricing.subsidy_eligible,
+                            quotation_validity_days: q.commercial_terms.quotation_validity_days,
+                            payment_terms: q.commercial_terms.payment_terms
+                        };
+                    } catch (e) {
+                        alert('Error loading quotation: ' + e);
+                    }
+                },
+
+                async recalculateLive() {
+                    if (!this.currentQuotation) return;
+                    try {
+                        const res = await fetch('/api/quotation/recalculate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                quotation: this.currentQuotation,
+                                overrides: this.builderOverrides
+                            })
+                        });
+                        if (res.ok) {
+                            this.currentQuotation = await res.json();
+                        }
+                    } catch (e) {
+                        console.error('Error during live recalculation:', e);
+                    }
+                },
+
+                resetToRecommended() {
+                    if (!this.currentQuotation) return;
+                    const recKw = this.currentQuotation.recommended_capacity_kw || 2.0;
+                    this.builderOverrides.system_capacity_kw = recKw;
+                    this.builderOverrides.panel_wattage_wp = 540;
+                    this.builderOverrides.discount_amount = 0;
+                    this.builderOverrides.discount_percent = 0;
+                    this.recalculateLive();
+                },
+
+                selectPackage(pkgKey) {
+                    if (!this.currentQuotation || !this.currentQuotation.packages || !this.currentQuotation.packages[pkgKey]) return;
+                    const pkg = this.currentQuotation.packages[pkgKey];
+                    this.builderOverrides.system_capacity_kw = pkg.system_capacity_kw;
+                    this.builderOverrides.panel_wattage_wp = pkg.panel.wattage_wp;
+                    this.builderOverrides.inverter_capacity_kw = pkg.inverter.capacity_kw;
+                    this.builderOverrides.price_per_kw = pkg.pricing.price_per_kw;
+                    this.builderTab = 'editor';
+                    this.recalculateLive();
+                },
+
+                async saveQuotation(status = 'Draft') {
+                    if (!this.currentQuotation) return;
+                    this.isSavingQuotation = true;
+                    try {
+                        const res = await fetch('/api/quotation/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                quotation: this.currentQuotation,
+                                status: status
+                            })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            this.currentQuotation.status = status;
+                            alert(`Quotation ${this.currentQuotation.quotation_no} saved successfully as ${status}!`);
+                            this.fetchQuotationHistory();
+                        } else {
+                            alert('Save failed: ' + (data.detail || 'Unknown error'));
+                        }
+                    } catch (e) {
+                        alert('Error saving quotation: ' + e);
+                    } finally {
+                        this.isSavingQuotation = false;
+                    }
+                },
+
+                async generateAndDownloadPdf() {
+                    if (!this.currentQuotation) return;
+                    this.isGeneratingPdf = true;
+                    try {
+                        const res = await fetch('/api/quotation/pdf', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ quotation: this.currentQuotation })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.pdf_url) {
+                            window.open(data.pdf_url, '_blank');
+                            this.fetchQuotationHistory();
+                        } else {
+                            alert('PDF generation failed: ' + (data.detail || 'Unknown error'));
+                        }
+                    } catch (e) {
+                        alert('Error generating PDF: ' + e);
+                    } finally {
+                        this.isGeneratingPdf = false;
+                    }
+                },
+
+                async reopenQuotation(quotationNo) {
+                    try {
+                        const res = await fetch('/api/quotations/' + encodeURIComponent(quotationNo));
+                        const data = await res.json();
+                        if (res.ok && data.quotation) {
+                            this.currentQuotation = data.quotation;
+                            this.builderOverrides = {
+                                system_capacity_kw: data.quotation.system_capacity_kw,
+                                panel_wattage_wp: data.quotation.panel?.wattage_wp || 540,
+                                inverter_capacity_kw: data.quotation.inverter?.capacity_kw || 2.0,
+                                price_per_kw: data.quotation.pricing?.rate_per_kw || 52000,
+                                discount_amount: data.quotation.pricing?.discount_amount || 0,
+                                discount_percent: data.quotation.pricing?.discount_percent || 0,
+                                subsidy_applicable: data.quotation.pricing?.subsidy_eligible !== false,
+                                quotation_validity_days: data.quotation.commercial_terms?.quotation_validity_days || 15,
+                                payment_terms: data.quotation.commercial_terms?.payment_terms || ''
+                            };
+                            this.activeNav = 'builder';
+                            this.builderTab = 'editor';
+                        }
+                    } catch (e) {
+                        alert('Error reopening quotation: ' + e);
+                    }
+                },
+
+                async updateQuotationStatus(quotationNo, newStatus) {
+                    try {
+                        const res = await fetch('/api/quotations/' + encodeURIComponent(quotationNo) + '/status', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        if (res.ok) {
+                            this.fetchQuotationHistory();
+                        }
+                    } catch (e) {
+                        console.error('Error updating status:', e);
+                    }
+                },
+
+                // FORMATTERS
+                formatInr(val) {
+                    if (val === undefined || val === null) return '₹ 0';
+                    const n = Math.round(Math.abs(Number(val)));
+                    const s = n.toString();
+                    let formatted = s;
+                    if (s.length > 3) {
+                        const last3 = s.substring(s.length - 3);
+                        let rem = s.substring(0, s.length - 3);
+                        let groups = [];
+                        while (rem.length > 2) {
+                            groups.unshift(rem.substring(rem.length - 2));
+                            rem = rem.substring(0, rem.length - 2);
+                        }
+                        if (rem.length > 0) groups.unshift(rem);
+                        formatted = groups.join(',') + ',' + last3;
+                    }
+                    return (Number(val) < 0 ? '- ₹ ' : '₹ ') + formatted;
+                },
+
+                formatNum(val) {
+                    if (val === undefined || val === null) return '0';
+                    return Number(val).toLocaleString('en-IN', { maximumFractionDigits: 1 });
+                },
+
+                // EXTRACTION PIPELINE METHODS (PRESERVED)
+                async loadSample(cNo) {
+                    this.consumerNo = cNo;
+                    try {
+                        const res = await fetch(`/api/reports/${cNo}`);
+                        if (res.ok) {
+                            this.reportData = await res.json();
+                            this.initChart();
+                        }
+                    } catch (e) {
+                        console.error('Error loading sample:', e);
+                    }
+                },
+
+                startExtraction() {
+                    if (this.isLoading) return;
+                    this.isLoading = true;
+                    this.reportData = null;
+                    this.liveLogs = [];
+                    this.errorMessage = '';
+                    this.errorTitle = '';
+                    this.activeConsumer = this.consumerNo;
+                    this.activeUserId = this.userId;
+                    this.stepsStatus = { login: 'running', add: 'pending', summary: 'pending', report: 'pending', delete: 'pending' };
+
+                    const params = new URLSearchParams({
+                        consumer_no: this.consumerNo,
+                        user_id: this.userId,
+                        password: this.password,
+                        delete_after: this.deleteAfter,
+                        headed: false
+                    });
+
+                    const evtSource = new EventSource(`/api/stream?${params.toString()}`);
+
+                    evtSource.onmessage = (e) => {
+                        try {
+                            const payload = JSON.parse(e.data);
+                            this.liveLogs.push(payload);
+                            
+                            this.$nextTick(() => {
+                                const term = document.getElementById('terminalLogs');
+                                if (term) term.scrollTop = term.scrollHeight;
+                            });
+
+                            if (payload.step && this.stepsStatus[payload.step] !== undefined) {
+                                if (payload.status === 'progress') this.stepsStatus[payload.step] = 'running';
+                                if (payload.status === 'success') this.stepsStatus[payload.step] = 'completed';
+                                if (payload.status === 'error') this.stepsStatus[payload.step] = 'error';
+                            }
+
+                            if (payload.status === 'error') {
+                                this.isLoading = false;
+                                this.errorMessage = payload.message;
+                                this.errorTitle = (payload.data && payload.data.title) ? payload.data.title : 'Extraction Error';
+                                evtSource.close();
+                            }
+
+                            if (payload.step === 'report' && payload.data) {
+                                this.reportData = payload.data;
+                                this.initChart();
+                            }
+
+                            if (payload.status === 'done') {
+                                this.isLoading = false;
+                                evtSource.close();
+                                this.fetchSavedReports();
+                            }
+                        } catch (err) {
+                            console.error('SSE Parse Error:', err);
+                        }
+                    };
+
+                    evtSource.onerror = (err) => {
+                        this.isLoading = false;
+                        evtSource.close();
+                    };
+                },
+
+                getStepCardClass(step) {
+                    const st = this.stepsStatus[step];
+                    if (st === 'completed') return 'bg-emerald-50 border-emerald-200 text-emerald-800';
+                    if (st === 'running') return 'bg-amber-50 border-amber-300 text-amber-900 animate-pulse';
+                    if (st === 'error') return 'bg-rose-50 border-rose-200 text-rose-800';
+                    return 'bg-slate-50 border-slate-200 text-slate-400';
+                },
+
+                getStepIcon(step) {
+                    const st = this.stepsStatus[step];
+                    if (st === 'completed') return '✓';
+                    if (st === 'running') return '<span class="inline-block animate-spin">⟳</span>';
+                    if (st === 'error') return '✗';
+                    return '○';
+                },
+
+                filteredCycles() {
+                    if (!this.reportData?.billing_cycles) return [];
+                    const q = this.tableSearch.toLowerCase().trim();
+                    if (!q) return this.reportData.billing_cycles;
+                    return this.reportData.billing_cycles.filter(c => 
+                        (c.assessment_date || '').toLowerCase().includes(q) ||
+                        (c.receipt_no || '').toLowerCase().includes(q) ||
+                        (c.payment_date || '').toLowerCase().includes(q)
+                    );
+                },
+
+                initChart() {
+                    this.$nextTick(() => {
+                        this.updateChart();
+                    });
+                },
+
+                updateChart() {
+                    const canvas = document.getElementById('consumptionChart');
+                    if (!canvas || !this.reportData?.billing_cycles) return;
+
+                    const cycles = [...this.reportData.billing_cycles].reverse();
+                    const labels = cycles.map(c => c.assessment_date);
+
+                    let datasets = [];
+                    if (this.activeChartMetric === 'units') {
+                        datasets = [{
+                            label: 'Units Consumed (kWh)',
+                            data: cycles.map(c => c.units_consumed),
+                            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                            borderColor: 'rgb(79, 70, 229)',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            type: 'bar'
+                        }];
+                    } else if (this.activeChartMetric === 'charges') {
+                        datasets = [{
+                            label: 'CC Bill Charges (₹)',
+                            data: cycles.map(c => c.cc_charges),
+                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            borderColor: 'rgb(5, 150, 105)',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            type: 'bar'
+                        }];
+                    } else if (this.activeChartMetric === 'demand') {
+                        datasets = [{
+                            label: 'Recorded Demand (kW)',
+                            data: cycles.map(c => c.recorded_demand),
+                            borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            type: 'line'
+                        }];
+                    }
+
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                    }
+
+                    this.chartInstance = new Chart(canvas, {
+                        type: 'bar',
+                        data: { labels, datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: true, position: 'top' },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            };
+        }
+    </script>
+</body>
+</html>
