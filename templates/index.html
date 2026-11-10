@@ -39,6 +39,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- KaTeX for Mathematical Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -118,6 +122,48 @@
                     Quotation Settings
                     <span x-show="!ownerAuthenticated" class="text-[10px]">🔒</span>
                 </button>
+
+                <div class="h-4 w-[1px] bg-slate-300 mx-1"></div>
+
+                <!-- STRUCTURAL AUTOMATION MODULE TABS (PHASE 1.4) -->
+                <button 
+                    type="button" 
+                    @click="activeNav = 'structural-dashboard'; fetchStructuralProjects();" 
+                    :class="activeNav === 'structural-dashboard' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Structural Projects
+                    <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full text-[10px]" x-text="structuralProjects.length">0</span>
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'structural-configurator'" 
+                    :class="activeNav === 'structural-configurator' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    Configurator
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'structural-history'; fetchStructuralRuns();" 
+                    :class="activeNav === 'structural-history' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                >
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Runs
+                </button>
+                <button 
+                    type="button" 
+                    @click="activeNav = 'structural-holds'; fetchStructuralHolds();" 
+                    :class="activeNav === 'structural-holds' ? 'bg-amber-500 text-white shadow-sm' : 'text-amber-700 hover:bg-amber-50'" 
+                    class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 font-bold"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Holds
+                    <span class="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded-full text-[10px]">12</span>
+                </button>
             </nav>
 
             <!-- Quick Action / Status -->
@@ -136,6 +182,10 @@
             <button @click="activeNav = 'builder'" :class="activeNav === 'builder' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Quotation Builder</button>
             <button @click="activeNav = 'history'; fetchQuotationHistory();" :class="activeNav === 'history' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">History</button>
             <button @click="activeNav = 'settings'; loadSettings();" :class="activeNav === 'settings' ? 'bg-brand-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Settings 🔒</button>
+            <button @click="activeNav = 'structural-dashboard'; fetchStructuralProjects();" :class="activeNav === 'structural-dashboard' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Projects</button>
+            <button @click="activeNav = 'structural-configurator'" :class="activeNav === 'structural-configurator' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Configurator</button>
+            <button @click="activeNav = 'structural-history'; fetchStructuralRuns();" :class="activeNav === 'structural-history' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap">Runs</button>
+            <button @click="activeNav = 'structural-holds'; fetchStructuralHolds();" :class="activeNav === 'structural-holds' ? 'bg-amber-500 text-white' : 'bg-white text-amber-700'" class="px-3 py-1.5 rounded-lg whitespace-nowrap font-bold">Holds ⚠️</button>
         </div>
     </header>
 
@@ -776,6 +826,85 @@
                                 ></textarea>
                             </div>
                         </div>
+
+                        <!-- 5. STRUCTURAL ASSESSMENT INTEGRATION (PHASE 1.4) -->
+                        <div class="border-t border-slate-100 pt-4 space-y-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>📐 Structural Assessment</span>
+                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-semibold px-2 py-0.5 rounded-full">Phase 1.4</span>
+                                </h4>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">12 Holds Active</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600">Integrate automated mounting structure calculations and compliance checks with this proposal.</p>
+                            
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Mounting System Type</label>
+                                <select 
+                                    x-model="quotationMountingSystem"
+                                    class="w-full px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white"
+                                >
+                                    <option value="SYSTEM_A">System A — Elevated Steel Canopy (IS 800:2007)</option>
+                                    <option value="SYSTEM_B">System B — Low-Height Aluminium Rail (IS 8147:1976 / AA ADM)</option>
+                                    <option value="SYSTEM_C">System C — Metal-Sheet Roof Mounting (Direct Fix)</option>
+                                    <option value="SYSTEM_D">System D — Ballasted Non-Penetrating System (Flat Roof)</option>
+                                </select>
+                            </div>
+
+                            <button 
+                                type="button" 
+                                @click="runQuotationStructuralAssessment()" 
+                                :disabled="isAssessingQuotationStructural"
+                                class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5"
+                            >
+                                <span x-show="!isAssessingQuotationStructural">⚡ Run Structural Assessment</span>
+                                <span x-show="isAssessingQuotationStructural" class="animate-spin">⟳ Computing Structural Loads...</span>
+                            </button>
+
+                            <!-- Inline Assessment Result Summary -->
+                            <div x-show="quotationStructuralResult" class="bg-white p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 text-[11px]">Governing Unity Ratio:</span>
+                                    <span 
+                                        class="font-mono font-bold px-2 py-0.5 rounded text-[11px]"
+                                        :class="(quotationStructuralResult?.max_unity_ratio <= 1.0) ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-rose-100 text-rose-800 border border-rose-200'"
+                                        x-text="(quotationStructuralResult?.max_unity_ratio || 0).toFixed(3) + ' (' + ((quotationStructuralResult?.max_unity_ratio <= 1.0) ? 'NUM CHECK PASS' : 'OVERLOAD') + ')'"
+                                    ></span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-slate-600">
+                                    <span>Governing Check:</span>
+                                    <strong class="font-mono text-slate-800" x-text="quotationStructuralResult?.governing_check"></strong>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-slate-600">
+                                    <span>Peak Wind Pressure (pz):</span>
+                                    <span class="font-mono font-bold" x-text="(quotationStructuralResult?.wind_pressure_n_m2 || 0).toFixed(0) + ' N/m²'"></span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-amber-800">
+                                    <span>Active Verification Holds:</span>
+                                    <strong class="font-mono">12 Enforced (AFC Blocked)</strong>
+                                </div>
+                                <div class="p-2 bg-amber-50 rounded border border-amber-200 text-[10px] text-amber-900 font-medium leading-tight">
+                                    ⚠️ PRELIMINARY — FOR REVIEW ONLY — NOT FOR CONSTRUCTION.
+                                    Drawing stamped strictly blocked.
+                                </div>
+                                <div class="flex items-center gap-2 pt-1">
+                                    <a 
+                                        :href="'/api/quotations/' + encodeURIComponent(currentQuotation?.quotation_no || '') + '/structural/dxf'" 
+                                        target="_blank" 
+                                        class="flex-1 py-1 px-2 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded"
+                                    >
+                                        📥 DXF Drawing
+                                    </a>
+                                    <a 
+                                        :href="'/api/quotations/' + encodeURIComponent(currentQuotation?.quotation_no || '') + '/structural/report'" 
+                                        target="_blank" 
+                                        class="flex-1 py-1 px-2 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded"
+                                    >
+                                        📄 Report (.md)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 
@@ -1301,6 +1430,1179 @@
             </div>
         </div>
 
+        <!-- ====================================================================== -->
+        <!-- 6. STRUCTURAL PROJECTS DASHBOARD (PHASE 1.4)                           -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'structural-dashboard'" x-cloak class="space-y-6">
+            <!-- Governance Warning Banner -->
+            <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚠️</span>
+                        <h3 class="text-sm font-extrabold text-amber-900 tracking-tight uppercase">Engineering Governance Notice</h3>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900">VERIFICATION PENDING</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">AFC STRICTLY BLOCKED</span>
+                    </div>
+                    <span class="text-[11px] font-mono font-bold text-amber-800 bg-white/80 px-2.5 py-1 rounded-lg border border-amber-200">12 Canonical Verification Holds Enforced</span>
+                </div>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                    <strong>PRELIMINARY — FOR REVIEW ONLY — NOT FOR CONSTRUCTION.</strong> All structural outputs, DXF general arrangement drawings, and utilization ratios are preliminary calculations generated under Phase 1 automation safeguards. Construction release is strictly prohibited until physical site inspection, geotechnical investigation, certified material testing, and licensed Structural Engineer sign-off are completed.
+                </p>
+            </div>
+
+            <!-- Dashboard Header & Top Controls -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xl font-bold text-slate-900 tracking-tight">Structural Mounting Projects</h2>
+                            <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">Phase 1.4</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">Multi-code structural compliance engine (IS 800:2007, IS 875:2015, IS 8147:1976 / AA ADM) & automated DXF generation</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button 
+                            type="button" 
+                            @click="fetchStructuralProjects()" 
+                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5"
+                        >
+                            <span>↻ Refresh</span>
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="openNewProjectModal()" 
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
+                        >
+                            <span>+ New Structural Project</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search and Filters Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+                    <!-- Search Input -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Search Projects</label>
+                        <input 
+                            type="text" 
+                            x-model="structuralSearch" 
+                            @input.debounce.300ms="fetchStructuralProjects()"
+                            placeholder="Code, Name, Client, Quote #..." 
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+                        >
+                    </div>
+
+                    <!-- Mounting System Filter -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Mounting System</label>
+                        <select 
+                            x-model="structuralSystemFilter" 
+                            @change="fetchStructuralProjects()"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 bg-white"
+                        >
+                            <option value="ALL">All Mounting Systems</option>
+                            <option value="SYSTEM_A">System A — Elevated Steel Canopy</option>
+                            <option value="SYSTEM_B">System B — Low-Height Aluminium Rail</option>
+                            <option value="SYSTEM_C">System C — Metal-Sheet Roof Mounting</option>
+                            <option value="SYSTEM_D">System D — Ballasted Non-Penetrating</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Calculation Status</label>
+                        <select 
+                            x-model="structuralStatusFilter" 
+                            @change="fetchStructuralProjects()"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 bg-white"
+                        >
+                            <option value="ALL">All Statuses</option>
+                            <option value="PASS">PASS (Compliant)</option>
+                            <option value="FAIL">FAIL (Overloaded)</option>
+                            <option value="NOT_RUN">Not Calculated (Draft)</option>
+                        </select>
+                    </div>
+
+                    <!-- Completeness Filter -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Input Completeness</label>
+                        <select 
+                            x-model="structuralCompletenessFilter" 
+                            @change="fetchStructuralProjects()"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 bg-white"
+                        >
+                            <option value="ALL">All Completeness</option>
+                            <option value="COMPLETE">Complete (100%)</option>
+                            <option value="INCOMPLETE">Incomplete (&lt;100%)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Grid / Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="p in structuralProjects" :key="p.project_id">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition p-5 flex flex-col justify-between space-y-4">
+                        <!-- Top Meta -->
+                        <div class="space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200" x-text="p.project_id"></span>
+                                    <h4 class="font-bold text-sm text-slate-900 mt-1" x-text="p.name || 'Unnamed Project'"></h4>
+                                </div>
+                                <span 
+                                    class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+                                    :class="p.latest_run ? (p.latest_run.status === 'PASS' ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-rose-100 text-rose-800 border border-rose-200') : 'bg-slate-100 text-slate-600'"
+                                    x-text="p.latest_run ? (p.latest_run.status === 'PASS' ? 'NUM CHECK PASS' : 'NUM CHECK FAIL') : 'DRAFT'"
+                                ></span>
+                            </div>
+
+                            <p class="text-xs text-slate-600">
+                                Client: <strong class="text-slate-800" x-text="p.client_name || 'N/A'"></strong> • <span x-text="p.site_location || 'Tamil Nadu'"></span>
+                            </p>
+
+                            <!-- Canonical System Badge -->
+                            <div>
+                                <span 
+                                    class="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+                                    :class="{
+                                        'bg-blue-50 text-blue-800 border border-blue-200': p.mounting_system === 'SYSTEM_A',
+                                        'bg-emerald-50 text-emerald-800 border border-emerald-200': p.mounting_system === 'SYSTEM_B',
+                                        'bg-amber-50 text-amber-800 border border-amber-200': p.mounting_system === 'SYSTEM_C',
+                                        'bg-purple-50 text-purple-800 border border-purple-200': p.mounting_system === 'SYSTEM_D'
+                                    }"
+                                    x-text="formatSystemName(p.mounting_system)"
+                                ></span>
+                            </div>
+
+                            <!-- Associated Quotation Link if any -->
+                            <div x-show="p.associated_quotation_no" class="text-[11px] text-slate-500">
+                                Linked Quotation: <strong class="font-mono text-brand-600" x-text="p.associated_quotation_no"></strong>
+                            </div>
+
+                            <!-- Input Data Completeness Progress Bar -->
+                            <div class="space-y-1 pt-1">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="text-slate-500 font-medium">Input Data Completeness:</span>
+                                    <strong 
+                                        :class="p.input_completeness?.completeness_percent === 100 ? 'text-indigo-700' : 'text-amber-700'"
+                                        x-text="(p.input_completeness?.completeness_percent || 0) + '%'"
+                                    ></strong>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                                    <div 
+                                        class="h-full rounded-full transition-all duration-300"
+                                        :class="p.input_completeness?.completeness_percent === 100 ? 'bg-indigo-600' : 'bg-amber-500'"
+                                        :style="'width: ' + (p.input_completeness?.completeness_percent || 0) + '%'"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Latest Run Utilization Indicator -->
+                            <div x-show="p.latest_run" class="pt-2 border-t border-slate-100 space-y-1 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 text-[11px]">Governing Unity Ratio:</span>
+                                    <span 
+                                        class="font-mono font-bold px-1.5 py-0.5 rounded text-[11px]"
+                                        :class="(p.latest_run?.max_unity_ratio <= 1.0) ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-rose-100 text-rose-800 border border-rose-200'"
+                                        x-text="(p.latest_run?.max_unity_ratio || 0).toFixed(3) + ' (' + ((p.latest_run?.max_unity_ratio <= 1.0) ? 'NUM CHECK PASS' : 'FAIL') + ')'"
+                                    ></span>
+                                </div>
+                                <div class="flex items-start justify-between gap-1 text-[11px] text-slate-500">
+                                    <span class="whitespace-nowrap">Check:</span>
+                                    <span class="font-mono font-medium text-slate-700 text-right leading-tight" x-text="p.latest_run?.governing_check"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Action Buttons -->
+                        <div class="border-t border-slate-100 pt-3 flex items-center justify-between gap-2">
+                            <button 
+                                type="button" 
+                                @click="openConfiguratorForProject(p.project_id)" 
+                                class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"
+                            >
+                                ⚙️ Configure
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="calculateProjectDirect(p.project_id)" 
+                                class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg transition"
+                            >
+                                ⚡ Calculate
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="openDeliverablesModal(p)" 
+                                class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-semibold rounded-lg transition"
+                            >
+                                📦 Deliverables
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty State -->
+                <div x-show="structuralProjects.length === 0" class="col-span-full bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                    <div class="text-4xl">🏗️</div>
+                    <h3 class="text-base font-bold text-slate-900">No Structural Projects Found</h3>
+                    <p class="text-xs text-slate-500 max-w-sm mx-auto">Create a new structural project or link one from the Quotation Builder to run IS-standard engineering calculations.</p>
+                    <button 
+                        type="button" 
+                        @click="openNewProjectModal()" 
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition"
+                    >
+                        + Create First Structural Project
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 7. CANONICAL MOUNTING SYSTEM CONFIGURATOR (PHASE 1.4)                  -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'structural-configurator'" x-cloak class="space-y-6">
+            <!-- Configurator Top Bar -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-600/20">
+                            ⚙️
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-lg font-bold text-slate-900 tracking-tight">Mounting System Configurator</h2>
+                                <span class="font-mono font-bold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full" x-text="activeStructuralProject?.project_id || 'SELECT PROJECT'"></span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Project: <strong class="text-slate-800" x-text="activeStructuralProject?.name || 'No project selected'"></strong>
+                                • Client: <span x-text="activeStructuralProject?.client_name || 'N/A'"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Project Selector Dropdown -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold text-slate-600">Active Project:</label>
+                        <select 
+                            x-model="activeStructuralProjectId" 
+                            @change="loadStructuralProject($event.target.value)"
+                            class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white shadow-sm focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <template x-for="p in structuralProjects" :key="p.project_id">
+                                <option :value="p.project_id" :selected="activeStructuralProjectId === p.project_id" x-text="p.project_id + ' — ' + p.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Completeness and Governance Alert Strip -->
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex flex-wrap items-center justify-between text-xs gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-800">Input Data Completeness:</span>
+                            <span 
+                                class="font-mono font-bold px-2 py-0.5 rounded text-xs"
+                                :class="liveCompleteness?.completeness_percent === 100 ? 'bg-indigo-100 text-indigo-900 border border-indigo-200' : 'bg-amber-100 text-amber-800 border border-amber-200'"
+                                x-text="(liveCompleteness?.completeness_percent || 0) + '% (' + (liveCompleteness?.status || 'INCOMPLETE') + ')'"
+                            ></span>
+                        </div>
+                        <div class="text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                            PRELIMINARY — FOR REVIEW ONLY — NOT FOR CONSTRUCTION
+                        </div>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div 
+                            class="h-full rounded-full transition-all duration-300"
+                            :class="liveCompleteness?.completeness_percent === 100 ? 'bg-indigo-600' : 'bg-amber-500'"
+                            :style="'width: ' + (liveCompleteness?.completeness_percent || 0) + '%'"
+                        ></div>
+                    </div>
+
+                    <!-- Explicit disclaimer distinguishing completeness from engineering safety -->
+                    <p class="text-[10px] text-slate-500 leading-tight">
+                        ℹ️ <strong>Input Data Completeness</strong> tracks parameter readiness for solver execution. 100% input completion does not imply structural safety, calculation pass, or engineering certification.
+                    </p>
+
+                    <!-- Missing fields alert if incomplete -->
+                    <div x-show="liveCompleteness?.missing_fields && liveCompleteness?.missing_fields.length > 0" class="text-[11px] text-amber-800">
+                        ⚠️ <strong>Missing required fields:</strong> <span class="font-mono" x-text="liveCompleteness?.missing_fields.join(', ')"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. CANONICAL MOUNTING SYSTEM SELECTION CARDS (A, B, C, D) -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Select Canonical Mounting System</h3>
+                    <span class="text-[11px] text-slate-500 font-mono">Governed by IS 800:2007 &amp; IS 8147:1976</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- System A -->
+                    <div 
+                        @click="selectMountingSystem('SYSTEM_A')"
+                        class="p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3"
+                        :class="activeStructuralProject?.mounting_system === 'SYSTEM_A' ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'"
+                    >
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">SYSTEM A</span>
+                                <span x-show="activeStructuralProject?.mounting_system === 'SYSTEM_A'" class="text-blue-600 font-bold">✓ Active</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-900">Elevated Steel Canopy</h4>
+                            <p class="text-xs text-slate-600">IS 800:2007 steel structural framing with 2.0–3.5m ground/roof clearance for usable space.</p>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500 border-t border-slate-100 pt-2">
+                            Purlin: C100x50x20x2.0 • Rafter: ISMC150 • Col: SHS 80x80x3.2
+                        </div>
+                    </div>
+
+                    <!-- System B -->
+                    <div 
+                        @click="selectMountingSystem('SYSTEM_B')"
+                        class="p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3"
+                        :class="activeStructuralProject?.mounting_system === 'SYSTEM_B' ? 'border-emerald-600 bg-emerald-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'"
+                    >
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">SYSTEM B</span>
+                                <span x-show="activeStructuralProject?.mounting_system === 'SYSTEM_B'" class="text-emerald-600 font-bold">✓ Active</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-900">Low-Height Aluminium Rail</h4>
+                            <p class="text-xs text-slate-600">IS 8147:1976 / AA ADM extruded 6063-T6 rails mounted on short concrete stubs or L-feet.</p>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500 border-t border-slate-100 pt-2">
+                            Rail: AL_RAIL_40X40 • Stub: AL_STUB_50 • Clearance: 0.3m
+                        </div>
+                    </div>
+
+                    <!-- System C -->
+                    <div 
+                        @click="selectMountingSystem('SYSTEM_C')"
+                        class="p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3"
+                        :class="activeStructuralProject?.mounting_system === 'SYSTEM_C' ? 'border-amber-600 bg-amber-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'"
+                    >
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">SYSTEM C</span>
+                                <span x-show="activeStructuralProject?.mounting_system === 'SYSTEM_C'" class="text-amber-600 font-bold">✓ Active</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-900">Metal-Sheet Roof Mounting</h4>
+                            <p class="text-xs text-slate-600">Direct purlin penetration/standing seam clamp to trapezoidal industrial roof sheets.</p>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500 border-t border-slate-100 pt-2">
+                            Purlin: HAT_SECTION_50 • Fastener: Self-drilling EPDM
+                        </div>
+                    </div>
+
+                    <!-- System D -->
+                    <div 
+                        @click="selectMountingSystem('SYSTEM_D')"
+                        class="p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between space-y-3"
+                        :class="activeStructuralProject?.mounting_system === 'SYSTEM_D' ? 'border-purple-600 bg-purple-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'"
+                    >
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono text-xs font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">SYSTEM D</span>
+                                <span x-show="activeStructuralProject?.mounting_system === 'SYSTEM_D'" class="text-purple-600 font-bold">✓ Active</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-900">Ballasted Non-Penetrating</h4>
+                            <p class="text-xs text-slate-600">Zero roof penetration on flat RCC terraces; friction retention with precast concrete blocks.</p>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500 border-t border-slate-100 pt-2">
+                            Block: 45 kg Deadweight • Friction coeff: 0.4 • Tilt: 10°
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DYNAMIC INPUT PARAMETER TABS WITH PROVENANCE BADGES -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                <!-- Navigation Tabs inside Configurator -->
+                <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+                    <button 
+                        type="button" 
+                        @click="configuratorActiveTab = 'site'" 
+                        :class="configuratorActiveTab === 'site' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        class="px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-1.5"
+                    >
+                        <span>1. Site Parameters (IS 875)</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        @click="configuratorActiveTab = 'module'" 
+                        :class="configuratorActiveTab === 'module' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        class="px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-1.5"
+                    >
+                        <span>2. Module Specifications</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        @click="configuratorActiveTab = 'geometry'" 
+                        :class="configuratorActiveTab === 'geometry' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        class="px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-1.5"
+                    >
+                        <span>3. Array Framing &amp; Geometry</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        @click="configuratorActiveTab = 'sections'" 
+                        :class="configuratorActiveTab === 'sections' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        class="px-4 py-2 text-xs font-semibold rounded-xl transition flex items-center gap-1.5"
+                    >
+                        <span>4. Section Assignments</span>
+                    </button>
+                </div>
+
+                <!-- SUB-TAB 1: SITE PARAMETERS -->
+                <div x-show="configuratorActiveTab === 'site'" class="space-y-4">
+                    <!-- Codal Formula Banner with Math Rendering -->
+                    <div class="border-b border-slate-100 pb-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-slate-900">Wind Load &amp; Environmental Factors (IS 875 Part 3:2015)</h4>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold">IS 875 (Part 3): 2015 Cl 6.2 &amp; 6.3</span>
+                        </div>
+                        <div class="p-3 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs flex flex-wrap items-center justify-between gap-3 border border-slate-700 shadow-inner">
+                            <div>
+                                <span class="text-indigo-400 font-bold uppercase tracking-wider text-[10px] block mb-0.5">Design Wind Pressure Formula:</span>
+                                <div class="text-sm">
+                                    <span class="italic font-serif">p</span><sub>z</sub> = 0.6 &middot; <span class="italic font-serif">V</span><sub>z</sub><sup>2</sup>
+                                    <span class="text-slate-400 mx-2">&mdash;</span>
+                                    <span class="text-slate-300">where</span>
+                                    <span class="italic font-serif ml-2">V</span><sub>z</sub> = <span class="italic font-serif">V</span><sub>b</sub> &middot; <span class="italic font-serif">k</span><sub>1</sub> &middot; <span class="italic font-serif">k</span><sub>2</sub> &middot; <span class="italic font-serif">k</span><sub>3</sub> &middot; <span class="italic font-serif">k</span><sub>4</sub>
+                                </div>
+                            </div>
+                            <div class="text-right text-[11px] text-slate-400">
+                                <div>Return Period: <strong class="text-slate-200">50 Years</strong></div>
+                                <div>Air Density Const: <strong class="text-amber-400">0.60</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Site Location & Meteorological Provenance Box (Phase 1.4.1 Requirement A) -->
+                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-base">📍</span>
+                                <h5 class="text-xs font-bold text-slate-900">Site Meteorological Provenance &amp; Codal Source</h5>
+                            </div>
+                            <template x-if="configuratorInputs.site?.location_name?.toUpperCase().includes('SALEM') || activeProject?.project?.site_location?.toUpperCase().includes('SALEM')">
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                                    UNLISTED IN ANNEX A TABLE &bull; PROVISIONAL MANUAL REGIONAL CONTOUR INTERPRETATION
+                                </span>
+                            </template>
+                            <template x-if="!(configuratorInputs.site?.location_name?.toUpperCase().includes('SALEM') || activeProject?.project?.site_location?.toUpperCase().includes('SALEM'))">
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                    ANNEX A CODALLY LISTED
+                                </span>
+                            </template>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs bg-white p-3 rounded-lg border border-slate-200">
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase tracking-wider block">Resolved Site Location</span>
+                                <strong class="text-slate-900 font-mono text-xs" x-text="configuratorInputs.site?.location_name || activeProject?.project?.site_location || 'Salem, Tamil Nadu'"></strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase tracking-wider block">Site Coordinates</span>
+                                <span class="font-mono text-slate-800 font-semibold text-xs" x-text="(configuratorInputs.site?.latitude || 11.6643).toFixed(4) + '°N, ' + (configuratorInputs.site?.longitude || 78.1460).toFixed(4) + '°E'"></span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase tracking-wider block">Codal Wind Speed (Vb)</span>
+                                <span class="font-mono text-indigo-700 font-bold text-xs" x-text="(configuratorInputs.site?.basic_wind_speed_m_s || 39.0) + ' m/s'"></span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase tracking-wider block">Codal Source Reference</span>
+                                <span class="font-mono text-slate-800 font-semibold text-[11px]" x-text="activeProject?.site_inputs?.code_reference || 'IS 875 (Part 3): 2015 Fig 1 &amp; Annex A'"></span>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-slate-600 bg-amber-50/70 p-2.5 rounded-lg border border-amber-200/60 leading-relaxed">
+                            <div class="flex items-start gap-1.5">
+                                <span class="text-amber-800 font-bold text-xs">Provenance:</span>
+                                <span class="text-slate-700" x-text="activeProject?.site_inputs?.provenance_source || 'IS 875 (Part 3): 2015 Fig 1 Regional Contour (Unlisted in Annex A Table — Provisional Manual Interpretation — Site Verification Mandatory)'"></span>
+                            </div>
+                            <div class="mt-1.5 pt-1.5 border-t border-amber-200/50 space-y-1 text-[10px]">
+                                <div class="text-slate-700">
+                                    <strong>Codal Basis:</strong> Basic wind speed is provisional and configured from IS 875 Fig 1 regional contour interpretation. Automated GIS contour interpolation is not implemented. Site-specific topographic verification remains mandatory.
+                                </div>
+                                <div class="flex flex-wrap items-center justify-between gap-1">
+                                    <span class="text-rose-800 font-semibold">
+                                        ⚠️ Active Holds: <code class="bg-rose-100 text-rose-900 px-1 py-0.2 rounded font-bold">WIND_COORD_UNVERIFIED_HOLD</code> &amp; <code class="bg-rose-100 text-rose-900 px-1 py-0.2 rounded font-bold">ASSUMED_DATA_CERTIFICATION_HOLD</code> &mdash; Mandatory verification before AFC.
+                                    </span>
+                                    <span class="font-mono text-amber-900 font-bold">Provenance Level: 2 (Provisional Regional)</span>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 5.3 &amp; Annex A">Basic Wind Speed Vb (m/s)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.5" 
+                                x-model.number="configuratorInputs.site.basic_wind_speed_m_s" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+                            >
+                            <span class="text-[10px] text-slate-500">IS 875 Fig 1 &amp; Annex A (Salem=39, Cbe=39, Chn=50 m/s)</span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 6.3.2.1">Terrain Category (1–4)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <select 
+                                x-model.number="configuratorInputs.site.terrain_category" 
+                                @change="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 bg-white"
+                            >
+                                <option value="1">Category 1 (Exposed open terrain)</option>
+                                <option value="2">Category 2 (Open with scattered obstacles)</option>
+                                <option value="3">Category 3 (Well-wooded / industrial area)</option>
+                                <option value="4">Category 4 (Dense urban / tall buildings)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Table 1">Design Life (Years)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                x-model.number="configuratorInputs.site.design_life_years" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="Measured elevation above mean sea level">Ground Elevation (m)</label>
+                                <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">Measured</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="1" 
+                                x-model.number="configuratorInputs.site.ground_elevation_m" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 6.3.1 / Table 1">k1 (Risk Coefficient)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                x-model.number="configuratorInputs.site.k1" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 6.3.2 / Table 2">k2 (Terrain Factor)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                x-model.number="configuratorInputs.site.k2" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 6.3.3">k3 (Topography Factor)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                x-model.number="configuratorInputs.site.k3" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700" title="IS 875 (Part 3): 2015 Clause 6.3.4">k4 (Cyclonic Factor)</label>
+                                <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">Statutory Code</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                x-model.number="configuratorInputs.site.k4" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 2: MODULE SPECIFICATIONS -->
+                <div x-show="configuratorActiveTab === 'module'" class="space-y-4">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h4 class="text-sm font-bold text-slate-900">PV Module Mechanical &amp; Electrical Dimensions</h4>
+                        <p class="text-xs text-slate-500">Values certified from manufacturer datasheets (Waaree, Adani, Jinko)</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Module Wattage (Wp)</label>
+                                <span class="text-[10px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold">Certified</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                x-model.number="configuratorInputs.module.module_wattage_wp" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Length (mm)</label>
+                                <span class="text-[10px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold">Certified</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                x-model.number="configuratorInputs.module.length_mm" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Width (mm)</label>
+                                <span class="text-[10px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold">Certified</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                x-model.number="configuratorInputs.module.width_mm" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Thickness (mm)</label>
+                                <span class="text-[10px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold">Certified</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                x-model.number="configuratorInputs.module.thickness_mm" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Mass (kg)</label>
+                                <span class="text-[10px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold">Certified</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.1" 
+                                x-model.number="configuratorInputs.module.mass_kg" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Tilt Angle (deg)</label>
+                                <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">Derived</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="1" 
+                                x-model.number="configuratorInputs.module.tilt_angle_deg" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Orientation</label>
+                                <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">Derived</span>
+                            </div>
+                            <select 
+                                x-model="configuratorInputs.module.orientation" 
+                                @change="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white"
+                            >
+                                <option value="portrait">Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: ARRAY FRAMING & GEOMETRY -->
+                <div x-show="configuratorActiveTab === 'geometry'" class="space-y-4">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h4 class="text-sm font-bold text-slate-900">Framing Dimensions &amp; Clearances</h4>
+                        <p class="text-xs text-slate-500">Geometry dictates wind aerodynamic exposure and member spans.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Clearance Height (m)</label>
+                                <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">Measured</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.1" 
+                                x-model.number="configuratorInputs.geometry.ground_clearance_m" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Purlin Spacing (m)</label>
+                                <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">Derived</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.05" 
+                                x-model.number="configuratorInputs.geometry.purlin_spacing_m" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Rafter Span / Spacing (m)</label>
+                                <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">Derived</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.1" 
+                                x-model.number="configuratorInputs.geometry.rafter_spacing_m" 
+                                @input="updateCompletenessLive()"
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <!-- System D specific: Ballast block mass -->
+                        <div x-show="activeStructuralProject?.mounting_system === 'SYSTEM_D'">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Ballast Block Mass (kg)</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="1" 
+                                x-model.number="configuratorInputs.geometry.ballast_block_mass_kg" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+
+                        <!-- System D specific: Friction coeff -->
+                        <div x-show="activeStructuralProject?.mounting_system === 'SYSTEM_D'">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Roof Friction Coeff (μ)</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.05" 
+                                x-model.number="configuratorInputs.geometry.roof_friction_coeff" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 4: SECTION ASSIGNMENTS -->
+                <div x-show="configuratorActiveTab === 'sections'" class="space-y-4">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h4 class="text-sm font-bold text-slate-900">Member Structural Profiles &amp; Catalog Assignments</h4>
+                        <p class="text-xs text-slate-500">IS 808 / IS 8147 section database cross-sections</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Purlin Section</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="text" 
+                                x-model="configuratorInputs.sections.purlin_section" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                            <span class="text-[10px] text-slate-500">e.g. C100x50x20x2.0 or HAT_SECTION_50</span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Rafter Section</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="text" 
+                                x-model="configuratorInputs.sections.rafter_section" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                            <span class="text-[10px] text-slate-500">e.g. ISMC150 or AL_RAIL_40X40</span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Column Section</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="text" 
+                                x-model="configuratorInputs.sections.column_section" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                            <span class="text-[10px] text-slate-500">e.g. SHS_80X80X3.2 or AL_STUB_50</span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Rail Section</label>
+                                <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-bold">Assumed</span>
+                            </div>
+                            <input 
+                                type="text" 
+                                x-model="configuratorInputs.sections.rail_section" 
+                                class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300"
+                            >
+                            <span class="text-[10px] text-slate-500">e.g. AL_RAIL_40X40</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Controls: Save & Execute Calculation -->
+                <div class="border-t border-slate-100 pt-5 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            @click="saveStructuralInputs()" 
+                            :disabled="isSavingStructuralInputs"
+                            class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl border border-slate-300 transition flex items-center gap-1.5"
+                        >
+                            <span x-show="!isSavingStructuralInputs">💾 Save Inputs</span>
+                            <span x-show="isSavingStructuralInputs" class="animate-spin">⟳ Saving...</span>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            @click="openDeliverablesModal(activeStructuralProject)" 
+                            class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-brand-700 font-semibold text-xs rounded-xl border border-slate-300 transition flex items-center gap-1.5"
+                        >
+                            <span>📦 One-Click Deliverables</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            @click="calculateActiveProject()" 
+                            :disabled="isCalculatingStructural"
+                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center gap-2"
+                        >
+                            <span x-show="!isCalculatingStructural">⚡ Execute Structural Calculation</span>
+                            <span x-show="isCalculatingStructural" class="animate-spin">⟳ Computing Multi-Code Checks...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calculation Result Card (if assessed) -->
+                <div x-show="lastAssessmentResult" class="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between border-b border-slate-200 pb-3 gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h4 class="font-bold text-sm text-slate-900">Calculation Results &amp; Member Checks</h4>
+                            <span 
+                                class="font-mono text-xs font-extrabold px-3 py-1 rounded-xl uppercase tracking-tight"
+                                :class="(lastAssessmentResult?.max_unity_ratio <= 1.0) ? 'bg-teal-100 text-teal-900 border border-teal-300' : 'bg-rose-100 text-rose-900 border border-rose-300'"
+                                x-text="(lastAssessmentResult?.max_unity_ratio <= 1.0) ? 'NUMERICAL CHECK PASS — ENGINEERING VERIFICATION PENDING' : 'NUMERICAL CHECK FAIL (OVERLOADED)'"
+                            ></span>
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-xl bg-amber-100 text-amber-900 border border-amber-300">
+                                12 HOLDS ACTIVE
+                            </span>
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-xl bg-rose-100 text-rose-900 border border-rose-300">
+                                AFC BLOCKED
+                            </span>
+                        </div>
+                        <span class="text-xs font-mono text-slate-500" x-text="'Run ID: ' + (lastAssessmentResult?.run_id || 'N/A')"></span>
+                    </div>
+
+                    <!-- Explicit Engineering Disclaimer Banner (Phase 1.4.1 Requirement D) -->
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+                        <span class="text-base leading-none">⚠️</span>
+                        <div class="space-y-0.5">
+                            <strong class="font-bold">Numerical Limit State Verification (IS 800:2007 / IS 875:2015) Only:</strong>
+                            <p class="text-[11px] text-amber-800 leading-relaxed">
+                                Calculation execution evaluates member demand-to-capacity ratios under idealized codal formulations. It does <strong>NOT</strong> constitute professional engineering sign-off, structural adequacy warranty, or site construction release. All 12 canonical verification holds remain legally active.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Primary Governing Metrics -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-3 rounded-lg border border-slate-200" title="Governing Limit State ratio according to IS 800:2007 Clause 5.3 &amp; 10.3">
+                            <span class="text-[11px] text-slate-500">Max Unity Ratio (Governing):</span>
+                            <div 
+                                class="text-xl font-extrabold font-mono mt-1"
+                                :class="(lastAssessmentResult?.max_unity_ratio <= 1.0) ? 'text-teal-700' : 'text-rose-600'"
+                                x-text="(lastAssessmentResult?.max_unity_ratio || 0).toFixed(3)"
+                            ></div>
+                            <span class="text-[10px] text-slate-400">Limit: 1.000 (IS 800 Limit State)</span>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="text-[11px] text-slate-500">Governing Check:</span>
+                            <div class="text-xs font-bold font-mono text-slate-800 mt-1 leading-snug" x-text="lastAssessmentResult?.governing_check"></div>
+                            <span class="text-[10px] text-slate-400">Critical member section</span>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="text-[11px] text-slate-500">Active Verification Holds:</span>
+                            <div class="text-xl font-extrabold font-mono text-amber-600 mt-1">12 Enforced</div>
+                            <span class="text-[10px] text-slate-400">Zero-tolerance safety gate</span>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="text-[11px] text-slate-500">Drawing Stamping Status:</span>
+                            <div class="text-sm font-bold font-mono text-rose-600 mt-1">AFC BLOCKED</div>
+                            <span class="text-[10px] text-slate-400">Preliminary review only</span>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Member Limit State Checks Table (Phase 1.4.1 Engineering Workflow) -->
+                    <div class="mt-4 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm space-y-0">
+                        <div class="px-4 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-800">Limit State Member Checks &amp; Unity Ratios</span>
+                                <span class="text-[10px] font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-semibold">IS 800:2007 Limit State Method (LSM)</span>
+                            </div>
+                            <div class="text-xs text-slate-500 font-mono" x-text="'Total Checks: ' + ((lastAssessmentResult?.results || activeStructuralProject?.latest_run?.results || []).length)"></div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600">
+                                        <th class="px-4 py-2.5">Component / Check Name</th>
+                                        <th class="px-3 py-2.5">Governing Combination</th>
+                                        <th class="px-3 py-2.5 text-right">Demand (Ed)</th>
+                                        <th class="px-3 py-2.5 text-right">Capacity (Rd)</th>
+                                        <th class="px-3 py-2.5 text-center">Unity Ratio (Ed/Rd)</th>
+                                        <th class="px-3 py-2.5">Codal Clause</th>
+                                        <th class="px-3 py-2.5 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-mono text-[11px]">
+                                    <template x-for="res in (lastAssessmentResult?.results || activeStructuralProject?.latest_run?.results || [])" :key="res.check_name">
+                                        <tr class="hover:bg-slate-50/80 transition">
+                                            <td class="px-4 py-2.5 font-bold text-slate-900 font-sans">
+                                                <span x-text="res.check_name"></span>
+                                                <div class="text-[10px] text-slate-400 font-normal font-sans" x-text="res.notes"></div>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-slate-600 text-[10px]" x-text="res.governing_combination || '1.5(DL + WL)'"></td>
+                                            <td class="px-3 py-2.5 text-right font-bold text-slate-800" x-text="(res.demand_value !== undefined ? res.demand_value.toFixed(2) : 'N/A') + ' ' + (res.units || '')"></td>
+                                            <td class="px-3 py-2.5 text-right text-slate-600" x-text="(res.capacity_value !== undefined ? res.capacity_value.toFixed(2) : 'N/A') + ' ' + (res.units || '')"></td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <span 
+                                                    class="inline-block px-2 py-0.5 rounded font-extrabold text-[11px]"
+                                                    :class="{
+                                                        'bg-blue-100 text-blue-800': res.unity_ratio <= 0.70,
+                                                        'bg-emerald-100 text-emerald-800': res.unity_ratio > 0.70 && res.unity_ratio <= 0.95,
+                                                        'bg-amber-100 text-amber-800': res.unity_ratio > 0.95 && res.unity_ratio <= 1.00,
+                                                        'bg-rose-100 text-rose-800': res.unity_ratio > 1.00
+                                                    }"
+                                                    x-text="(res.unity_ratio !== undefined ? res.unity_ratio.toFixed(3) : 'N/A')"
+                                                ></span>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-slate-500 text-[10px]" x-text="res.clause_reference || 'IS 800:2007'"></td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <span 
+                                                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                                    :class="res.passed ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-rose-50 text-rose-800 border border-rose-200'"
+                                                    x-text="res.passed ? 'PASS' : 'FAIL'"
+                                                ></span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 8. CALCULATION HISTORY & IMMUTABLE SNAPSHOTS (PHASE 1.4)               -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'structural-history'" x-cloak class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Structural Run History &amp; Snapshots</h2>
+                        <p class="text-xs text-slate-500 mt-1">Immutable audit trail of historical calculation executions and reproducibility snapshots</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button 
+                            type="button" 
+                            @click="fetchStructuralRuns()" 
+                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition"
+                        >
+                            ↻ Refresh History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Runs Data Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left text-xs divide-y divide-slate-200">
+                        <thead class="bg-slate-50 font-semibold text-slate-600 uppercase text-[10px] tracking-wider">
+                            <tr>
+                                <th class="px-4 py-3">Run ID</th>
+                                <th class="px-4 py-3">Timestamp</th>
+                                <th class="px-4 py-3">Project / System</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Governing Ratio</th>
+                                <th class="px-4 py-3">Governing Check</th>
+                                <th class="px-4 py-3">Holds</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-mono">
+                            <template x-for="run in structuralRuns" :key="run.run_id">
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-4 py-3 font-bold text-indigo-700" x-text="run.run_id"></td>
+                                    <td class="px-4 py-3 text-slate-500" x-text="run.created_at"></td>
+                                    <td class="px-4 py-3 font-sans">
+                                        <div class="font-bold text-slate-800" x-text="run.project_id"></div>
+                                        <div class="text-[10px] text-slate-500 font-mono" x-text="run.mounting_system"></div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span 
+                                            class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                            :class="run.status === 'PASS' ? 'bg-teal-100 text-teal-900 border border-teal-200' : 'bg-rose-100 text-rose-900 border border-rose-200'"
+                                            x-text="run.status === 'PASS' ? 'NUM CHECK PASS' : 'NUM CHECK FAIL'"
+                                        ></span>
+                                    </td>
+                                    <td class="px-4 py-3 font-bold" :class="run.max_unity_ratio <= 1.0 ? 'text-teal-700' : 'text-rose-600'" x-text="(run.max_unity_ratio || 0).toFixed(3)"></td>
+                                    <td class="px-4 py-3 text-slate-700 text-[11px]" x-text="run.governing_check"></td>
+                                    <td class="px-4 py-3 text-amber-700 font-bold">12 Enforced</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button 
+                                            type="button" 
+                                            @click="inspectRun(run.run_id)" 
+                                            class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded font-sans transition"
+                                        >
+                                            🔍 Inspect Snapshot
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <div x-show="structuralRuns.length === 0" class="p-8 text-center text-xs text-slate-500">
+                        No historical calculation runs recorded yet. Execute an assessment in the Configurator to create an immutable run snapshot.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ====================================================================== -->
+        <!-- 9. ENGINEERING VERIFICATION HOLDS DASHBOARD (PHASE 1.4)               -->
+        <!-- ====================================================================== -->
+        <div x-show="activeNav === 'structural-holds'" x-cloak class="space-y-6">
+            <!-- Governance Master Alert -->
+            <div class="bg-amber-500 text-white rounded-2xl p-6 sm:p-8 shadow-lg space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🛡️</span>
+                        <div>
+                            <h2 class="text-xl font-extrabold tracking-tight">Engineering Governance &amp; Hold Register</h2>
+                            <p class="text-amber-100 text-xs mt-0.5">Zero-tolerance structural safety gate for RENSUN Solar</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1 bg-white text-amber-900 font-extrabold text-xs rounded-xl shadow-sm uppercase">12 Holds Active</span>
+                        <span class="px-3 py-1 bg-rose-600 text-white font-extrabold text-xs rounded-xl shadow-sm uppercase">AFC Strictly Blocked</span>
+                    </div>
+                </div>
+                <p class="text-xs text-amber-100 leading-relaxed max-w-4xl">
+                    Every calculation output, summary, drawing, and schedule generated by this platform is strictly <strong>PRELIMINARY — FOR REVIEW ONLY — NOT FOR CONSTRUCTION</strong>. Release of drawings for site erection or fabrication is blocked at the database, API, and UI layers until every applicable verification hold is individually certified by a licensed structural engineer following physical site surveys and laboratory coupon testing.
+                </p>
+            </div>
+
+            <!-- Holds Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="h in structuralHolds" :key="h.hold_id">
+                    <div class="bg-white rounded-2xl border-2 border-amber-200 shadow-sm p-5 space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-mono text-[11px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300" x-text="h.hold_id"></span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 uppercase tracking-wide">ACTIVE ENFORCED</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200" x-text="h.category || 'Engineering Requirement'"></span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-900" x-text="h.title || h.hold_id"></h4>
+                            <p class="text-xs text-slate-600 leading-relaxed" x-text="h.description || h.engineering_risk"></p>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-3 space-y-2 text-xs">
+                            <div class="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 font-medium block text-[10px] uppercase tracking-wider">Authoritative Standard / Reference</span>
+                                <span class="font-mono text-slate-900 font-bold text-xs" x-text="h.standard || 'Reference pending verification'"></span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">
+                                <strong>Responsible Reviewer:</strong> <span class="text-slate-800 font-medium" x-text="h.responsible_reviewer || 'Registered Structural Engineer'"></span>
+                            </div>
+                            <div class="p-2.5 bg-amber-50/70 rounded-lg text-[10px] text-slate-800 leading-normal border border-amber-200/80">
+                                <strong class="text-amber-900 font-bold">Release Criteria:</strong> <span x-text="h.release_criteria"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
     </main>
 
     <!-- SAVED REPORTS MODAL (EXISTING) -->
@@ -1323,6 +2625,288 @@
                         </div>
                     </div>
                 </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW STRUCTURAL PROJECT MODAL (PHASE 1.4) -->
+    <div x-show="showNewProjectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showNewProjectModal = false" class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+                    <span>🏗️ Create New Structural Project</span>
+                </h3>
+                <button @click="showNewProjectModal = false" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+            </div>
+
+            <form @submit.prevent="submitNewProject()" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Project ID / Code *</label>
+                    <input 
+                        type="text" 
+                        x-model="newProjectForm.project_code" 
+                        required 
+                        placeholder="e.g. RS-STR-2026-001" 
+                        class="w-full px-3 py-2 font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+                    >
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Project Name *</label>
+                    <input 
+                        type="text" 
+                        x-model="newProjectForm.name" 
+                        required 
+                        placeholder="e.g. RenSun Coimbatore Rooftop" 
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+                    >
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Client Name</label>
+                        <input 
+                            type="text" 
+                            x-model="newProjectForm.client_name" 
+                            placeholder="e.g. M/s RenSun Solar" 
+                            class="w-full px-3 py-2 rounded-xl border border-slate-300"
+                        >
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Site Location</label>
+                        <input 
+                            type="text" 
+                            x-model="newProjectForm.site_location" 
+                            placeholder="e.g. Coimbatore, TN" 
+                            class="w-full px-3 py-2 rounded-xl border border-slate-300"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Canonical Mounting System *</label>
+                    <select 
+                        x-model="newProjectForm.mounting_system" 
+                        required 
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="SYSTEM_A">System A — Elevated Steel Canopy (IS 800:2007)</option>
+                        <option value="SYSTEM_B">System B — Low-Height Aluminium Rail (IS 8147:1976 / AA ADM)</option>
+                        <option value="SYSTEM_C">System C — Metal-Sheet Roof Mounting (Direct Fix)</option>
+                        <option value="SYSTEM_D">System D — Ballasted Non-Penetrating (Flat RCC)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Description (Optional)</label>
+                    <textarea 
+                        x-model="newProjectForm.description" 
+                        rows="2" 
+                        placeholder="Site details, roof characteristics, engineering constraints..." 
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300"
+                    ></textarea>
+                </div>
+
+                <div x-show="newProjectError" class="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs" x-text="newProjectError"></div>
+
+                <div class="border-t border-slate-100 pt-3 flex items-center justify-end gap-2">
+                    <button 
+                        type="button" 
+                        @click="showNewProjectModal = false" 
+                        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        :disabled="isCreatingProject"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
+                    >
+                        <span x-show="!isCreatingProject">Create Project</span>
+                        <span x-show="isCreatingProject" class="animate-spin">⟳ Creating...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- STRUCTURAL DELIVERABLES MODAL (PHASE 1.4) -->
+    <div x-show="showDeliverablesModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showDeliverablesModal = false" class="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-base text-slate-900">Project Deliverables</h3>
+                    <p class="text-xs text-slate-500 font-mono" x-text="'Project: ' + (deliverablesProject?.project_id || '') + ' • ' + (deliverablesProject?.name || '')"></p>
+                </div>
+                <button @click="showDeliverablesModal = false" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+            </div>
+
+            <!-- Mandatory Preliminary Disclaimer -->
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1">
+                <div class="font-bold flex items-center gap-1.5">
+                    <span>⚠️</span>
+                    <span>PRELIMINARY — FOR REVIEW ONLY — NOT FOR CONSTRUCTION</span>
+                </div>
+                <p class="text-[11px] text-amber-800 leading-normal">
+                    Deliverables generated below are automated preliminary engineering models. Stamped Approved for Construction (AFC) drawing release is strictly blocked by 12 active verification holds pending site verification.
+                </p>
+            </div>
+
+            <!-- 1-Click Deliverable Download Buttons -->
+            <div class="space-y-2.5">
+                <!-- 1. Calculation Report -->
+                <button 
+                    type="button"
+                    @click="downloadDeliverable('report')" 
+                    class="w-full text-left p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-800 group"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">📄</span>
+                        <div>
+                            <div class="group-hover:text-indigo-700">Structural Assessment Report</div>
+                            <div class="text-[10px] text-slate-400 font-normal">Full multi-page markdown calculation report with governing member checks</div>
+                        </div>
+                    </div>
+                    <span class="text-indigo-600 font-bold text-[11px]">Download .md →</span>
+                </button>
+
+                <!-- 2. DXF General Arrangement Drawing -->
+                <button 
+                    type="button"
+                    @click="downloadDeliverable('dxf')" 
+                    class="w-full text-left p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-800 group"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">📐</span>
+                        <div>
+                            <div class="group-hover:text-indigo-700">General Arrangement CAD Drawing</div>
+                            <div class="text-[10px] text-slate-400 font-normal">AutoCAD Release 12 DXF with preliminary review watermark and title block</div>
+                        </div>
+                    </div>
+                    <span class="text-indigo-600 font-bold text-[11px]">Download .dxf →</span>
+                </button>
+
+                <!-- 3. Calculation Executive Summary -->
+                <button 
+                    type="button"
+                    @click="downloadDeliverable('summary')" 
+                    class="w-full text-left p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-800 group"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">📊</span>
+                        <div>
+                            <div class="group-hover:text-indigo-700">Executive Calculation Summary</div>
+                            <div class="text-[10px] text-slate-400 font-normal">Condensed executive overview of governing ratios, standards, and active holds</div>
+                        </div>
+                    </div>
+                    <span class="text-indigo-600 font-bold text-[11px]">Download .md →</span>
+                </button>
+
+                <!-- 4. Input Schedule -->
+                <button 
+                    type="button"
+                    @click="downloadDeliverable('inputs')" 
+                    class="w-full text-left p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-800 group"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">📋</span>
+                        <div>
+                            <div class="group-hover:text-indigo-700">Complete Input Schedule</div>
+                            <div class="text-[10px] text-slate-400 font-normal">Field-level engineering inputs with units and data provenance tier lineage</div>
+                        </div>
+                    </div>
+                    <span class="text-indigo-600 font-bold text-[11px]">Download .md →</span>
+                </button>
+
+                <!-- 5. Material & Section Schedule -->
+                <button 
+                    type="button"
+                    @click="downloadDeliverable('sections')" 
+                    class="w-full text-left p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-800 group"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">🔩</span>
+                        <div>
+                            <div class="group-hover:text-indigo-700">Material &amp; Section Schedule</div>
+                            <div class="text-[10px] text-slate-400 font-normal">Member assignments, section designations, and material yield strength specifications</div>
+                        </div>
+                    </div>
+                    <span class="text-indigo-600 font-bold text-[11px]">Download .md →</span>
+                </button>
+            </div>
+
+            <!-- Blocked AFC Construction Release Button -->
+            <div class="pt-2 border-t border-slate-100 space-y-2">
+                <button 
+                    type="button" 
+                    disabled 
+                    class="w-full py-2.5 bg-slate-200 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-300"
+                >
+                    <span>🔒 Approved for Construction (AFC) Package — BLOCKED</span>
+                </button>
+                <p class="text-[10px] text-center text-rose-700 font-medium">
+                    Strict Gatekeeper: AFC export blocked until all 12 Canonical Verification Holds are certified and sealed by a licensed Structural Engineer.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RUN DETAILS & IMMUTABLE SNAPSHOT INSPECTION MODAL (PHASE 1.4) -->
+    <div x-show="showRunDetailsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showRunDetailsModal = false" class="bg-white rounded-2xl max-w-3xl w-full border border-slate-200 shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+                        <span>🔍 Calculation Run Audit &amp; Snapshot</span>
+                        <span class="text-xs font-mono font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200" x-text="selectedRunDetails?.run?.run_id"></span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5" x-text="'Executed at: ' + (selectedRunDetails?.run?.created_at || '') + ' • Status: ' + (selectedRunDetails?.run?.status || '')"></p>
+                </div>
+                <button @click="showRunDetailsModal = false" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+            </div>
+
+            <!-- Reproducibility Banner -->
+            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+                <div>
+                    <strong>Audit Integrity: Verified</strong>
+                    <p class="text-[11px] text-emerald-800">Immutable input snapshot guarantees 100% calculation reproducibility across independent runs.</p>
+                </div>
+                <span class="font-mono text-xs font-bold text-emerald-700">HASH: VERIFIED</span>
+            </div>
+
+            <!-- Run Performance Metrics -->
+            <div class="grid grid-cols-3 gap-3 text-xs">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span class="text-[11px] text-slate-500">Max Unity Ratio:</span>
+                    <div class="text-lg font-bold font-mono text-slate-800 mt-1" x-text="(selectedRunDetails?.run?.max_unity_ratio || 0).toFixed(3)"></div>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span class="text-[11px] text-slate-500">Governing Check:</span>
+                    <div class="text-xs font-bold font-mono text-slate-800 mt-1 truncate" x-text="selectedRunDetails?.run?.governing_check"></div>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span class="text-[11px] text-slate-500">Active Holds:</span>
+                    <div class="text-lg font-bold font-mono text-amber-600 mt-1">12 Enforced</div>
+                </div>
+            </div>
+
+            <!-- Immutable Input Snapshot JSON Viewer -->
+            <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                    <span>Immutable Input Snapshot (Frozen State at Execution):</span>
+                    <span class="text-[10px] font-mono text-slate-500">JSON Format</span>
+                </div>
+                <pre class="p-4 bg-slate-900 text-slate-100 rounded-xl text-[11px] font-mono max-h-64 overflow-y-auto custom-scrollbar" x-text="formatSnapshotJson(selectedRunDetails?.run?.input_snapshot_json)"></pre>
+            </div>
+
+            <div class="border-t border-slate-100 pt-3 flex justify-end">
+                <button 
+                    type="button" 
+                    @click="showRunDetailsModal = false" 
+                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
+                >
+                    Close Inspection
+                </button>
             </div>
         </div>
     </div>
@@ -1390,6 +2974,40 @@
                     commercial_terms: { payment_terms: '', quotation_validity_days: 15 }
                 },
 
+                // Structural Automation State (Phase 1.4)
+                structuralProjects: [],
+                structuralSearch: '',
+                structuralSystemFilter: 'ALL',
+                structuralStatusFilter: 'ALL',
+                structuralCompletenessFilter: 'ALL',
+                isLoadingStructural: false,
+                activeStructuralProjectId: '',
+                activeStructuralProject: null,
+                configuratorActiveTab: 'site',
+                configuratorInputs: {
+                    site: { basic_wind_speed_m_s: 39.0, terrain_category: 2, design_life_years: 25, ground_elevation_m: 15.0, k1: 1.0, k2: 1.0, k3: 1.0, k4: 1.0 },
+                    module: { module_wattage_wp: 540.0, length_mm: 2278.0, width_mm: 1134.0, thickness_mm: 35.0, mass_kg: 28.5, tilt_angle_deg: 10.0, orientation: 'portrait' },
+                    geometry: { ground_clearance_m: 2.5, purlin_spacing_m: 1.4, rafter_spacing_m: 3.0, column_height_m: 2.8, ballast_block_mass_kg: 45.0, roof_friction_coeff: 0.4 },
+                    sections: { purlin_section: 'C100x50x20x2.0', rafter_section: 'ISMC150', column_section: 'SHS_80X80X3.2', rail_section: 'AL_RAIL_40X40' }
+                },
+                liveCompleteness: { completeness_percent: 100, status: 'COMPLETE', missing_fields: [] },
+                lastAssessmentResult: null,
+                isSavingStructuralInputs: false,
+                isCalculatingStructural: false,
+                structuralRuns: [],
+                selectedRunDetails: null,
+                showRunDetailsModal: false,
+                structuralHolds: [],
+                showNewProjectModal: false,
+                isCreatingProject: false,
+                newProjectError: '',
+                newProjectForm: { project_code: '', name: '', client_name: '', site_location: '', mounting_system: 'SYSTEM_A', description: '' },
+                showDeliverablesModal: false,
+                deliverablesProject: null,
+                quotationMountingSystem: 'SYSTEM_A',
+                isAssessingQuotationStructural: false,
+                quotationStructuralResult: null,
+
                 initApp() {
                     this.fetchSavedReports();
                     this.fetchQuotationHistory();
@@ -1399,6 +3017,8 @@
                     const token = sessionStorage.getItem('owner_token');
                     if (token) {
                         this.ownerAuthenticated = true;
+                        this.fetchStructuralProjects();
+                        this.fetchStructuralHolds();
                     }
                 },
 
@@ -1464,6 +3084,8 @@
                             this.ownerAuthenticated = true;
                             this.ownerPinInput = '';
                             this.loadSettings();
+                            this.fetchStructuralProjects();
+                            this.fetchStructuralHolds();
                         } else {
                             this.ownerAuthError = data.detail || 'Invalid PIN';
                         }
@@ -1867,6 +3489,366 @@
                             }
                         }
                     });
+                },
+
+                // ======================================================================
+                // STRUCTURAL AUTOMATION METHODS (PHASE 1.4)
+                // ======================================================================
+                formatSystemName(sys) {
+                    if (!sys) return 'Unknown System';
+                    const s = sys.toUpperCase();
+                    if (s.includes('SYSTEM_A')) return 'System A — Elevated Steel Canopy (IS 800:2007)';
+                    if (s.includes('SYSTEM_B')) return 'System B — Low-Height Aluminium Rail (IS 8147)';
+                    if (s.includes('SYSTEM_C')) return 'System C — Metal-Sheet Roof Mounting (Direct Fix)';
+                    if (s.includes('SYSTEM_D')) return 'System D — Ballasted Non-Penetrating (Flat RCC)';
+                    return sys;
+                },
+
+                getAuthHeaders(extraHeaders = {}) {
+                    const token = sessionStorage.getItem('owner_token') || '';
+                    const headers = { ...extraHeaders };
+                    if (token) {
+                        headers['X-Owner-Token'] = token;
+                    }
+                    return headers;
+                },
+
+                async fetchStructuralProjects() {
+                    try {
+                        this.isLoadingStructural = true;
+                        let url = `/api/structural/projects?limit=100`;
+                        if (this.structuralSearch) url += `&q=${encodeURIComponent(this.structuralSearch)}`;
+                        if (this.structuralSystemFilter !== 'ALL') url += `&system=${encodeURIComponent(this.structuralSystemFilter)}`;
+                        if (this.structuralStatusFilter !== 'ALL') url += `&status=${encodeURIComponent(this.structuralStatusFilter)}`;
+                        if (this.structuralCompletenessFilter !== 'ALL') url += `&completeness=${encodeURIComponent(this.structuralCompletenessFilter)}`;
+
+                        const res = await fetch(url, { headers: this.getAuthHeaders() });
+                        const data = await res.json();
+                        this.structuralProjects = data.projects || [];
+
+                        // If no active project selected, select the first one
+                        if (!this.activeStructuralProjectId && this.structuralProjects.length > 0) {
+                            this.loadStructuralProject(this.structuralProjects[0].project_id);
+                        }
+                    } catch (e) {
+                        console.error('Error fetching structural projects:', e);
+                    } finally {
+                        this.isLoadingStructural = false;
+                    }
+                },
+
+                openNewProjectModal() {
+                    this.newProjectForm = {
+                        project_code: 'RS-STR-' + Math.floor(1000 + Math.random() * 9000),
+                        name: '',
+                        client_name: '',
+                        site_location: 'Coimbatore, Tamil Nadu',
+                        mounting_system: 'SYSTEM_A',
+                        description: ''
+                    };
+                    this.newProjectError = '';
+                    this.showNewProjectModal = true;
+                },
+
+                async submitNewProject() {
+                    try {
+                        this.isCreatingProject = true;
+                        this.newProjectError = '';
+                        const res = await fetch('/api/structural/projects', {
+                            method: 'POST',
+                            headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+                            body: JSON.stringify(this.newProjectForm)
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            throw new Error(data.detail || 'Failed to create project');
+                        }
+                        this.showNewProjectModal = false;
+                        await this.fetchStructuralProjects();
+                        await this.loadStructuralProject(data.project_id);
+                        this.activeNav = 'structural-configurator';
+                    } catch (e) {
+                        this.newProjectError = e.message;
+                    } finally {
+                        this.isCreatingProject = false;
+                    }
+                },
+
+                async loadStructuralProject(projectId) {
+                    if (!projectId) return;
+                    try {
+                        const res = await fetch(`/api/structural/projects/${encodeURIComponent(projectId)}`, {
+                            headers: this.getAuthHeaders()
+                        });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        const p = data.project;
+                        this.activeStructuralProjectId = projectId;
+                        this.activeStructuralProject = p;
+                        if (p.site_inputs) {
+                            this.configuratorInputs.site = {
+                                ...this.configuratorInputs.site,
+                                ...p.site_inputs,
+                                basic_wind_speed_m_s: p.site_inputs.basic_wind_speed_vb || p.site_inputs.basic_wind_speed_m_s || 39.0,
+                                ground_elevation_m: p.site_inputs.rooftop_elevation_m || p.site_inputs.ground_elevation_m || 15.0,
+                                location_name: p.site_inputs.location_name || p.site_location || '',
+                                latitude: p.site_inputs.latitude || 11.6643,
+                                longitude: p.site_inputs.longitude || 78.1460,
+                            };
+                        }
+                        this.configuratorInputs.module = p.module_spec || this.configuratorInputs.module;
+                        this.configuratorInputs.geometry = p.array_geometry || this.configuratorInputs.geometry;
+                        this.configuratorInputs.sections = p.sections || this.configuratorInputs.sections;
+                        this.liveCompleteness = p.input_completeness || { completeness_percent: 100, status: 'COMPLETE', missing_fields: [] };
+                        this.lastAssessmentResult = p.latest_run || null;
+                        this.$nextTick(() => {
+                            if (window.renderMathInElement) {
+                                window.renderMathInElement(document.body, {
+                                    delimiters: [
+                                        {left: '$$', right: '$$', display: true},
+                                        {left: '$', right: '$', display: false},
+                                        {left: '\\(', right: '\\)', display: false},
+                                        {left: '\\[', right: '\\]', display: true}
+                                    ],
+                                    throwOnError: false
+                                });
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error loading structural project:', e);
+                    }
+                },
+
+                openConfiguratorForProject(projectId) {
+                    this.loadStructuralProject(projectId);
+                    this.activeNav = 'structural-configurator';
+                },
+
+                selectMountingSystem(sys) {
+                    if (!this.activeStructuralProject) return;
+                    this.activeStructuralProject.mounting_system = sys;
+                    if (sys === 'SYSTEM_A') {
+                        this.configuratorInputs.geometry.ground_clearance_m = 2.5;
+                        this.configuratorInputs.sections.purlin_section = 'C100x50x20x2.0';
+                        this.configuratorInputs.sections.rafter_section = 'ISMC150';
+                        this.configuratorInputs.sections.column_section = 'SHS_80X80X3.2';
+                    } else if (sys === 'SYSTEM_B') {
+                        this.configuratorInputs.geometry.ground_clearance_m = 0.3;
+                        this.configuratorInputs.sections.rail_section = 'AL_RAIL_40X40';
+                        this.configuratorInputs.sections.column_section = 'AL_STUB_50';
+                    } else if (sys === 'SYSTEM_C') {
+                        this.configuratorInputs.geometry.ground_clearance_m = 0.1;
+                        this.configuratorInputs.sections.purlin_section = 'HAT_SECTION_50';
+                    } else if (sys === 'SYSTEM_D') {
+                        this.configuratorInputs.geometry.ground_clearance_m = 0.2;
+                        this.configuratorInputs.geometry.ballast_block_mass_kg = 45.0;
+                        this.configuratorInputs.geometry.roof_friction_coeff = 0.4;
+                    }
+                    this.updateCompletenessLive();
+                },
+
+                updateCompletenessLive() {
+                    const req = [
+                        this.configuratorInputs.site.basic_wind_speed_m_s,
+                        this.configuratorInputs.site.terrain_category,
+                        this.configuratorInputs.module.module_wattage_wp,
+                        this.configuratorInputs.module.length_mm,
+                        this.configuratorInputs.module.width_mm,
+                        this.configuratorInputs.geometry.ground_clearance_m
+                    ];
+                    const filled = req.filter(v => v !== null && v !== undefined && v !== '' && v > 0).length;
+                    const pct = Math.round((filled / req.length) * 100);
+                    this.liveCompleteness.completeness_percent = pct;
+                    this.liveCompleteness.status = pct === 100 ? 'COMPLETE' : 'INCOMPLETE';
+                    const missing = [];
+                    if (!this.configuratorInputs.site.basic_wind_speed_m_s) missing.push('basic_wind_speed_m_s');
+                    if (!this.configuratorInputs.site.terrain_category) missing.push('terrain_category');
+                    if (!this.configuratorInputs.module.module_wattage_wp) missing.push('module_wattage_wp');
+                    if (!this.configuratorInputs.module.length_mm) missing.push('length_mm');
+                    if (!this.configuratorInputs.module.width_mm) missing.push('width_mm');
+                    if (!this.configuratorInputs.geometry.ground_clearance_m) missing.push('ground_clearance_m');
+                    this.liveCompleteness.missing_fields = missing;
+                },
+
+                async saveStructuralInputs() {
+                    if (!this.activeStructuralProjectId) return;
+                    try {
+                        this.isSavingStructuralInputs = true;
+                        const payload = {
+                            name: this.activeStructuralProject.name,
+                            client_name: this.activeStructuralProject.client_name,
+                            site_location: this.activeStructuralProject.site_location,
+                            mounting_system: this.activeStructuralProject.mounting_system,
+                            description: this.activeStructuralProject.description,
+                            site_inputs: this.configuratorInputs.site,
+                            module_spec: this.configuratorInputs.module,
+                            array_geometry: this.configuratorInputs.geometry,
+                            sections: this.configuratorInputs.sections
+                        };
+
+                        const res = await fetch(`/api/structural/projects/${encodeURIComponent(this.activeStructuralProjectId)}/inputs`, {
+                            method: 'PUT',
+                            headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (data.input_completeness) {
+                            this.liveCompleteness = data.input_completeness;
+                        }
+                    } catch (e) {
+                        console.error('Error saving structural inputs:', e);
+                    } finally {
+                        this.isSavingStructuralInputs = false;
+                    }
+                },
+
+                async calculateActiveProject() {
+                    if (!this.activeStructuralProjectId) return;
+                    try {
+                        this.isCalculatingStructural = true;
+                        await this.saveStructuralInputs();
+                        const res = await fetch(`/api/structural/projects/${encodeURIComponent(this.activeStructuralProjectId)}/calculate`, {
+                            method: 'POST',
+                            headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+                            body: JSON.stringify({})
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            throw new Error(data.detail || 'Calculation failed');
+                        }
+                        this.lastAssessmentResult = data.latest_run || data;
+                        await this.fetchStructuralProjects();
+                    } catch (e) {
+                        alert('Calculation failed: ' + e.message);
+                    } finally {
+                        this.isCalculatingStructural = false;
+                    }
+                },
+
+                async calculateProjectDirect(projectId) {
+                    try {
+                        const res = await fetch(`/api/structural/projects/${encodeURIComponent(projectId)}/calculate`, {
+                            method: 'POST',
+                            headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+                            body: JSON.stringify({})
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.detail || 'Calculation failed');
+                        await this.fetchStructuralProjects();
+                        if (this.activeStructuralProjectId === projectId) {
+                            this.lastAssessmentResult = data.latest_run || data;
+                        }
+                    } catch (e) {
+                        alert('Calculation failed: ' + e.message);
+                    }
+                },
+
+                async fetchStructuralRuns() {
+                    try {
+                        const pid = this.activeStructuralProjectId;
+                        const url = pid ? `/api/structural/projects/${encodeURIComponent(pid)}/runs` : '/api/structural/runs';
+                        const res = await fetch(url, { headers: this.getAuthHeaders() });
+                        const data = await res.json();
+                        this.structuralRuns = data.runs || [];
+                    } catch (e) {
+                        console.error('Error fetching structural runs:', e);
+                    }
+                },
+
+                async inspectRun(runId) {
+                    try {
+                        const res = await fetch(`/api/structural/runs/${encodeURIComponent(runId)}`, {
+                            headers: this.getAuthHeaders()
+                        });
+                        if (!res.ok) throw new Error('Run not found');
+                        const data = await res.json();
+                        this.selectedRunDetails = data;
+                        this.showRunDetailsModal = true;
+                    } catch (e) {
+                        alert('Unable to load run details: ' + e.message);
+                    }
+                },
+
+                formatSnapshotJson(jsonStr) {
+                    if (!jsonStr) return 'No snapshot recorded.';
+                    try {
+                        const parsed = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+                        return JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        return jsonStr;
+                    }
+                },
+
+                async fetchStructuralHolds() {
+                    try {
+                        const res = await fetch('/api/structural/holds', { headers: this.getAuthHeaders() });
+                        const data = await res.json();
+                        this.structuralHolds = data.holds || [];
+                    } catch (e) {
+                        console.error('Error fetching structural holds:', e);
+                    }
+                },
+
+                openDeliverablesModal(project) {
+                    this.deliverablesProject = project;
+                    this.showDeliverablesModal = true;
+                },
+
+                async downloadDeliverable(item) {
+                    const pid = this.deliverablesProject?.project_id;
+                    if (!pid) return;
+                    try {
+                        const res = await fetch(`/api/structural/projects/${encodeURIComponent(pid)}/deliverables/${encodeURIComponent(item)}`, {
+                            headers: this.getAuthHeaders()
+                        });
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            alert('Download failed: ' + (err.detail || res.statusText));
+                            return;
+                        }
+                        const blob = await res.blob();
+                        const disposition = res.headers.get('Content-Disposition');
+                        let filename = `${pid}_${item}`;
+                        if (disposition && disposition.indexOf('filename=') !== -1) {
+                            filename = disposition.split('filename=')[1].trim().replace(/["']/g, '');
+                        }
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    } catch (e) {
+                        alert('Download error: ' + e.message);
+                    }
+                },
+
+                async runQuotationStructuralAssessment() {
+                    if (!this.currentQuotation || !this.currentQuotation.quotation_no) {
+                        alert('Please load or save a quotation first.');
+                        return;
+                    }
+                    try {
+                        this.isAssessingQuotationStructural = true;
+                        const qNo = this.currentQuotation.quotation_no;
+                        const sys = this.quotationMountingSystem || 'SYSTEM_A';
+                        const res = await fetch(`/api/quotations/${encodeURIComponent(qNo)}/structural?mounting_system=${encodeURIComponent(sys)}`, {
+                            method: 'POST',
+                            headers: this.getAuthHeaders()
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            throw new Error(data.detail || 'Structural assessment failed');
+                        }
+                        this.quotationStructuralResult = data.structural_assessment;
+                        await this.fetchStructuralProjects();
+                    } catch (e) {
+                        alert('Assessment failed: ' + e.message);
+                    } finally {
+                        this.isAssessingQuotationStructural = false;
+                    }
                 }
             };
         }

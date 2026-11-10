@@ -1,0 +1,35 @@
+component_name,symbol,formulation_reference,calculated_value,unit,limiting_criterion,unity_ratio,pass_fail_status,engineering_assessment
+factored_uplift_moment,Mu_up,ULS-02 (0.9 DL + 1.5 WL_up),40.42,kNm,Static demand across 9.112 m rafter,N/A,PASS,Factored net uplift bending moment demand at midspan
+flange_lever_arm,d_flange,ISMB 300 (h - tf),287.6,mm,Lever arm between rafter flange centroids,N/A,PASS,Distance between compression and tension flanges
+flange_compression_force,Nc,Mu_up / d_flange,140.54,kN,Axial force in bottom compression flange under uplift,N/A,PASS,Compressive force requiring lateral nodal stabilization
+required_stabilizing_force,Pbr,IS 800:2007 Cl 8.3.2 (2.5% Rule),3.514,kN,Stabilizing force demand = 0.025 * Nc,N/A,PASS,Codal minimum lateral restraint force to prevent buckling
+diagonal_brace_angle,theta,Fly Bracing Geometry,45.0,deg,Inclination angle between rafter and diagonal strut,N/A,PASS,Standard 45-degree installation angle to purlin cleat
+diagonal_brace_axial_force,F_brace,Pbr / cos(45 deg),4.969,kN,Resolved axial compression demand in strut,N/A,PASS,Axial force transmitted through ISA 40x40x5 brace
+brace_section_type,Section,Rolled Equal Angle,ISA 40x40x5,designation,Hot-rolled steel equal angle (SP 6(1)),N/A,PASS,Minimum practical angle section for structural canopy bracing
+brace_cross_sectional_area,A_brace,SP 6(1) Table 1,379.0,mm2,Total gross cross-sectional area,N/A,PASS,Cross-sectional area of ISA 40x40x5
+brace_length,L_brace,Canopy Bay Geometry,600.0,mm,Centerline length of diagonal strut,N/A,PASS,Direct length between rafter bottom flange and purlin cleat
+radius_of_gyration_minimum,r_min,SP 6(1) Table 1 (rvv),7.7,mm,Minimum radius of gyration along v-v minor axis,N/A,PASS,Governs Euler compressive buckling of angle strut
+slenderness_ratio,lambda,IS 800:2007 Cl 7.5.1.2 (K=1.0),77.92,ratio,lambda = L / r_min = 600 / 7.7,180.0,PASS,Well within maximum permissible slenderness of 180 for compression
+design_compressive_stress,fcd,IS 800:2007 Cl 7.1.2 (Curve c),141.1,MPa,alpha = 0.49 for angle section,250.0,PASS,Buckling stress capacity accounting for initial imperfections
+design_compressive_capacity,Pd,IS 800:2007 Cl 7.1.2,53.48,kN,Pd = A * fcd / 1000 = 379 * 141.1 / 1000,N/A,PASS,Total compressive load carrying capacity of ISA 40x40x5
+brace_compression_unity_ratio,UR_comp,F_brace / Pd,0.0929,ratio,Demand / capacity under axial compression,1.0,PASS,High structural safety reserve (UR < 0.10)
+design_tensile_capacity,Td,IS 800:2007 Cl 6.2,86.14,kN,Td = Ag * fy / gamma_m0 = 379 * 250 / 1.10 / 1000,N/A,PASS,Tension capacity under gravity stress reversal
+single_leg_eccentricity,ex,SP 6(1) (cx distance),11.6,mm,Distance from connection face to angle centroid,N/A,PASS,Produces eccentric bending about minor principal axis
+single_leg_eccentric_moment,Mecc,F_brace * ex / 1000,0.0576,kNm,Eccentric moment = 4.969 kN * 0.0116 m,N/A,PASS,Additional moment induced by single-leg bolting
+elastic_section_modulus_angle,Zxx_angle,SP 6(1) Table 1,1940.0,mm3,Elastic section modulus for ISA 40x40x5,N/A,PASS,Bending capacity modulus for angle section
+design_bending_capacity_angle,Md_angle,IS 800:2007 Cl 8.2.1.2,0.4409,kNm,Md = Zxx * fy / gamma_m0 = 1940 * 250 / 1.1e6,N/A,PASS,Bending capacity of single angle leg
+combined_interaction_ratio,IR_combined,IS 800:2007 Cl 7.5.1 / 9.3,0.2236,ratio,(F_brace/Pd) + (Mecc/Md) = 0.0929 + 0.1307,1.0,PASS,Eccentricity interaction UR = 0.224 <= 1.0 (PASS)
+required_restraint_stiffness,K_req,Winter-Yura (2001) / AISC 360,0.1234,kN/mm,K_req = 4 * Nc / Lb = 4 * 140.54 / 4556,N/A,PASS,Minimum lateral nodal stiffness to enforce half-span buckling node
+diagonal_strut_stiffness,K_strut,(A*E/L) * cos^2(theta),64.75,kN/mm,Strut axial flexibility projected to rafter flange,N/A,PASS,Idealized lateral stiffness of diagonal member alone
+stiffened_cleat_stiffness,K_cleat,Cantilever Flexure (t=6mm),17.30,kN/mm,K_cleat = 3 * E * I / L^3 (b=100mm, t=6mm, L=40mm),N/A,PASS,Flexural stiffness of 6 mm stiffened angle cleat
+bolt_bearing_stiffness,K_bolt,Empirical Bolt Contact,50.00,kN/mm,Standard bearing deformation stiffness,N/A,PASS,Contact stiffness of M12 bolt in cleat hole
+purlin_web_stiffness_unreinforced,K_web,Cold-Formed Web Flexure,0.656,kN/mm,K_web = 48 * E * I / h^3 (2.0 mm unstiffened web),N/A,FAIL_UNREINFORCED,Direct web attachment provides inadequate restraint stiffness
+series_stiffness_with_cleat,K_sys_cleat,1 / (1/K_strut + 1/K_cleat + 1/K_bolt),10.72,kN/mm,Complete series spring stiffness with stiffened cleat,N/A,PASS,Exceeds K_req = 0.1234 kN/mm by 86.9x (PASS)
+series_stiffness_ratio_cleat,Ratio_cleat,K_sys_cleat / K_req,86.87,ratio,Provided series stiffness / required stiffness,1.0,PASS,Restraint stiffness is 86.9x required threshold
+series_stiffness_without_cleat,K_sys_no_cleat,1 / (1/K_strut + 1/K_web),0.650,kN/mm,Series stiffness if attached directly to 2 mm web,N/A,MARGINAL,Direct web attachment severely degrades stiffness
+bolt_connection_type,Conn_Type,IS 4000:1992 / IS 800 Cl 10.4,Pre-tensioned HSFG M12 Gr 8.8,type,Friction grip pre-tensioned bolt / welded cleat,N/A,PASS,HSFG pre-tensioning mandatory to eliminate clearance hole slip
+hsfg_slip_resistance_capacity,V_dsf,IS 4000:1992 Cl 5.4.2,17.00,kN,V_dsf = (mu * ne * Kh * F0) / gamma_mf (mu=0.40),N/A,PASS,Friction slip resistance capacity before hole play occurs
+hsfg_slip_resistance_unity_ratio,UR_slip,F_brace / V_dsf,0.292,ratio,Demand / capacity for pre-tension slip,1.0,PASS,Pre-tensioned bolt will not slip into clearance bearing
+purlin_web_stiffener_requirement,Web_Stiffener,Structural Detailing,MANDATORY,flag,Stiffener plate required at purlin fly-brace cleat,N/A,MANDATORY,Prevents web distortion and stabilizes purlin roll
+diaphragm_shear_stiffness_verification,Diaphragm_Status,Site Physical Evidence,UNVERIFIED,flag,Roof sheeting diaphragm shear stiffness G',N/A,HOLD-07,Diaphragm stiffness must be verified by site engineer
+restraint_system_governance_status,Governance_Status,Phase 1.5.3.2B.2B WP-02,CONDITIONALLY_ADEQUATE_PENDING_SITE_DIAPHRAGM_VERIFICATION,status,Overall system governance classification,N/A,CONDITIONAL,Conditional on HSFG torque and sheeting diaphragm verification

@@ -1,0 +1,33 @@
+Command exited with code 0.
+
+Command output:
+test_01_loading_tneb_consumer_data (test_quotation_system.TestSolarQuotationSystem.test_01_loading_tneb_consumer_data) ... ok
+test_02_owner_settings_persistence (test_quotation_system.TestSolarQuotationSystem.test_02_owner_settings_persistence) ... ok
+test_03_panel_wattage_configuration (test_quotation_system.TestSolarQuotationSystem.test_03_panel_wattage_configuration) ... ok
+test_04_solar_capacity_calculation (test_quotation_system.TestSolarQuotationSystem.test_04_solar_capacity_calculation) ... ok
+test_05_panel_quantity_calculation (test_quotation_system.TestSolarQuotationSystem.test_05_panel_quantity_calculation) ... ok
+test_06_inverter_compatibility_checks (test_quotation_system.TestSolarQuotationSystem.test_06_inverter_compatibility_checks) ... ok
+test_07_pricing_calculation (test_quotation_system.TestSolarQuotationSystem.test_07_pricing_calculation) ... ok
+test_08_gst_calculation (test_quotation_system.TestSolarQuotationSystem.test_08_gst_calculation) ... ok
+test_09_discount_calculation (test_quotation_system.TestSolarQuotationSystem.test_09_discount_calculation) ... ok
+test_10_subsidy_eligibility_handling (test_quotation_system.TestSolarQuotationSystem.test_10_subsidy_eligibility_handling) ... ok
+test_11_customer_specific_quotation_editing (test_quotation_system.TestSolarQuotationSystem.test_11_customer_specific_quotation_editing) ... ok
+test_12_owner_defaults_remain_unchanged_after_edits (test_quotation_system.TestSolarQuotationSystem.test_12_owner_defaults_remain_unchanged_after_edits) ... ok
+test_13_live_preview_recalculation (test_quotation_system.TestSolarQuotationSystem.test_13_live_preview_recalculation) ... ok
+test_14_draft_saving (test_quotation_system.TestSolarQuotationSystem.test_14_draft_saving) ... ok
+test_15_quotation_versioning (test_quotation_system.TestSolarQuotationSystem.test_15_quotation_versioning) ... ok
+test_16_pdf_generation (test_quotation_system.TestSolarQuotationSystem.test_16_pdf_generation) ... ok
+test_17_pdf_page_layout_and_content_validation (test_quotation_system.TestSolarQuotationSystem.test_17_pdf_page_layout_and_content_validation) ... ok
+test_18_quotation_history_retrieval (test_quotation_system.TestSolarQuotationSystem.test_18_quotation_history_retrieval) ... ok
+test_19_missing_tneb_data_handling (test_quotation_system.TestSolarQuotationSystem.test_19_missing_tneb_data_handling) ... ok
+test_20_invalid_pricing_and_configuration_handling (test_quotation_system.TestSolarQuotationSystem.test_20_invalid_pricing_and_configuration_handling) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 6.571s
+
+OK
+
+ISOLATED TEST DATABASE: /var/folders/nd/tgjq1_fs6x57j01h83vzv35c0000gn/T/rensun_test_qwra52ql/quotations.db
+PRODUCTION DATABASE MODIFIED: NO
+PRODUCTION SETTINGS MODIFIED: NO
+PRODUCTION PDF DIRECTORY MODIFIED: NO

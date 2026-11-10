@@ -1,0 +1,34 @@
+parameter_name,symbol,equation_reference,value,unit,engineering_interpretation
+nominal_yield_strength,fy,IS 800:2007 Cl 8.2.2,250.0,MPa,Characteristic yield strength of E250 Grade A steel
+elastic_modulus,E,IS 800:2007 Table 1,205000.0,MPa,Modulus of elasticity for structural steel
+shear_modulus,G,IS 800:2007 Table 1,78846.15,MPa,Shear modulus G = E / (2*(1+nu)) with nu = 0.30
+rafter_total_length,L_total,Structural Geometry,9.112,m,Overall span of primary rafter ISMB 300
+midspan_restraint_spacing,Lb,Structural Geometry,4.556,m,Unbraced length of bottom flange with midspan fly bracing
+moment_of_inertia_minor,Iy,SP 6(1) / Cross-Section,4539000.0,mm4,Minor-axis second moment of area for ISMB 300
+plastic_section_modulus,Zpx,SP 6(1) / Cross-Section,651000.0,mm3,Plastic section modulus about major bending axis
+torsion_constant,It,IS 800:2007 Annex E,216651.57,mm4,St. Venant torsion constant It = (2*b*tf^3 + (h-2*tf)*tw^3)/3
+warping_constant,Iw,IS 800:2007 Annex E,9.3857e+10,mm6,Warping constant Iw = Iy * (h - tf)^2 / 4
+factored_net_uplift_udl,w_net_uls02,IS 875 Part 3 / IS 800 Table 4,3.8948,kN/m,Factored net uplift UDL = 1.5*WL_up - 0.9*DL_stabilizing
+factored_uplift_moment_demand,Mu_up,Static Equilibrium,40.42,kNm,Mu = w_net * L^2 / 8 across 9.112 m span
+basic_elastic_buckling_moment,Mcr_0,IS 800:2007 Annex E Eq 1,107.73,kNm,Basic elastic buckling moment for Lb = 4.556 m with uniform moment (C1=1.0)
+governing_moment_gradient_factor,Cb_parabolic,Kirby-Nethercot (1979) / AISC 360-16 / IS 800 Annex E,1.2987,ratio,Parabolic moment gradient Cb = 12.5*Mmax / (2.5*Mmax + 3*MA + 4*MB + 3*MC)
+governing_elastic_buckling_moment,Mcr_governing,IS 800:2007 Annex E Eq 1,139.91,kNm,Mcr = Cb * Mcr_0 (1.2987 * 107.73 kNm)
+governing_non_dimensional_slenderness,lambda_LT,IS 800:2007 Cl 8.2.2,1.078,ratio,lambda_LT = sqrt(Zpx * fy / Mcr)
+governing_buckling_reduction_factor,chi_LT,IS 800:2007 Cl 8.2.2 Curve a,0.611,ratio,alpha_LT = 0.21 for rolled I-section
+governing_design_bending_capacity,Md_governing,IS 800:2007 Cl 8.2.2,90.40,kNm,Md = chi_LT * Zpx * fy / gamma_m0 (governing uplift flexural capacity)
+governing_unity_ratio,UR_governing,IS 800:2007 Cl 8.2.2,0.447,ratio,UR = Mu_up / Md_governing = 40.42 / 90.40 = 0.447 <= 1.0 (PASS)
+uniform_lower_bound_C1,C1_lower_bound,IS 800:2007 Table 42,1.0000,ratio,Conservative uniform moment lower bound
+uniform_lower_bound_Mcr,Mcr_uniform,IS 800:2007 Annex E Eq 1,107.73,kNm,Basic Mcr for uniform moment
+uniform_lower_bound_Md,Md_uniform,IS 800:2007 Cl 8.2.2,75.74,kNm,Design capacity under uniform moment lower bound
+uniform_lower_bound_UR,UR_uniform,IS 800:2007 Cl 8.2.2,0.534,ratio,UR = Mu_up / Md_uniform = 40.42 / 75.74 = 0.534 <= 1.0 (PASS)
+historical_reference_C1,C1_historical,IS 800:2007 Table 42 (Non-Governing Linear),1.7500,ratio,Historical linear moment gradient factor with zero transverse load (non-governing)
+historical_reference_Mcr,Mcr_historical,IS 800:2007 Annex E Eq 1,188.53,kNm,Mcr = 1.75 * Mcr_0 (historical comparative value)
+historical_reference_Md,Md_historical,IS 800:2007 Cl 8.2.2,105.64,kNm,Md with linear C1 = 1.75 (historical comparative value)
+historical_reference_UR,UR_historical,IS 800:2007 Cl 8.2.2,0.383,ratio,UR = Mu_up / Md_historical = 40.42 / 105.64 = 0.383 <= 1.0 (NON-GOVERNING REFERENCE)
+unbraced_full_span_length,L_unbraced_full,Structural Geometry,9112.0,mm,Full span unbraced bottom flange condition (zero fly braces)
+unbraced_full_span_Mcr,Mcr_full_span,IS 800:2007 Annex E Eq 1,46.29,kNm,Basic elastic buckling moment over 9.112 m unbraced span
+unbraced_full_span_Md,Md_full_span,IS 800:2007 Cl 8.2.2,37.12,kNm,Design capacity over 9.112 m unbraced span
+unbraced_full_span_UR,UR_full_span,IS 800:2007 Cl 8.2.2,1.089,ratio,UR = Mu_up / Md_full_span = 40.42 / 37.12 = 1.089 > 1.0 (STRUCTURAL FAILURE)
+continuous_2span_moment_demand,Mu_2span,Continuous Beam Theory,10.11,kNm,Negative moment over intermediate column if 2-span continuous framing implemented
+continuous_2span_UR,UR_2span,IS 800:2007 Cl 8.2.2,0.133,ratio,UR = 10.11 / 75.74 = 0.133 <= 1.0 (PASS)
+governing_architecture_status,Method_Status,Phase 1.5.3.2B.2B WP-01,GOVERNING_PARABOLIC_Cb_1_30,status,C1=1.75 removed from governing calculation; parabolic Cb=1.2987 governs

@@ -1,0 +1,90 @@
+{
+  "panel": {
+    "manufacturer": "Waaree Energies Ltd",
+    "model": "Bi-55-540 Wp",
+    "wattage_wp": 540,
+    "technology": "Mono PERC Half-Cut Cell (Bifacial)",
+    "product_warranty_years": 12,
+    "performance_warranty_years": 25,
+    "dimensions": "2278 × 1134 × 35 mm",
+    "efficiency_percent": 20.9,
+    "standard_wattages": [
+      540,
+      550,
+      580,
+      600
+    ]
+  },
+  "pricing": {
+    "pricing_model": "bundled_per_kw",
+    "price_per_kw": 52000,
+    "price_per_kw_includes_gst": false,
+    "gst_rate_percent": 12,
+    "subsidy_applicable": true,
+    "itemized": {
+      "panel_per_wp": 24,
+      "inverter_per_kw": 11000,
+      "mounting_structure_per_kw": 4500,
+      "cables_and_wiring_per_kw": 3500,
+      "electrical_accessories_lump": 6000,
+      "installation_charges_per_kw": 4000,
+      "transportation_charges_lump": 3500,
+      "additional_charges_lump": 0
+    }
+  },
+  "branding": {
+    "company_name": "RenSun Solar Energy Pvt Ltd",
+    "tagline": "Empowering Tamil Nadu with High-Yield Clean Rooftop Solar",
+    "logo_url": "/static/rensun_logo.svg",
+    "address": "No.4/3,Maravaneri 1st Cross Street, Salem-636007, Tamil Nadu.",
+    "phone": "+91 8610760689",
+    "email": "mailrensun@gmail.com",
+    "website": "https://rensunenergysystemsllp.godaddysites.com",
+    "gstin": "33AAACR1234F1Z8",
+    "authorized_signatory": "Gopinath",
+    "signatory_title": "Managing Director & Solar Solutions Architect",
+    "primary_color": "#0f766e",
+    "secondary_color": "#f59e0b"
+  },
+  "system": {
+    "system_type": "on-grid",
+    "battery_included": false,
+    "battery": {
+      "capacity_kwh": 0,
+      "voltage": 48,
+      "technology": "LiFePO4 Lithium Iron Phosphate",
+      "warranty_years": 5,
+      "price": 0
+    }
+  },
+  "inverter": {
+    "manufacturer": "Solis / Growatt",
+    "model": "S6-GR1P-K Series Single Phase Grid-Tied",
+    "type": "Single Phase MPPT On-Grid String Inverter",
+    "rated_capacity_kw": 3,
+    "warranty_years": 5,
+    "quantity": 1,
+    "efficiency_percent": 97.7
+  },
+  "warranty": {
+    "module_product_warranty": "12 Years Comprehensive Product Workmanship Warranty",
+    "module_performance_warranty": "25 Years Linear Performance Warranty (≥ 84.8% at Year 25)",
+    "inverter_warranty": "5 Years Standard Replacement Warranty (Extendable to 10 Years)",
+    "mounting_structure_warranty": "10 Years Structural & Rust-Proof Warranty (Hot-Dip Galvanized / Anodized Al)",
+    "workmanship_warranty": "5 Years Installation Workmanship & Free Comprehensive Maintenance Service",
+    "battery_warranty": "5 Years Replacement Warranty (Applicable only for Hybrid / Off-Grid battery systems)"
+  },
+  "commercial_terms": {
+    "payment_terms": "20% Booking Advance with Work Order • 70% Upon Material Delivery at Site • 10% Upon Net-Meter Synchronization",
+    "quotation_validity_days": 15,
+    "delivery_period_weeks": "2 to 3 Weeks from TANGEDCO Net-Metering Feasibility Sanction",
+    "terms_and_conditions": [
+      "Net-metering feasibility sanction and bi-directional meter issuance are subject to TANGEDCO/TNEB rules and distribution transformer capacity.",
+      "Client must provide shadow-free terrace/roof access and uninterrupted single/three-phase AC electricity connection for installation work.",
+      "PM Surya Ghar subsidy will be directly credited by MNRE into consumer's Aadhaar-linked bank account post grid commissioning."
+    ],
+    "subsidy_disclosure": "Eligible for PM Surya Ghar: Muft Bijli Yojana Central Financial Assistance: ₹30,000 for 1kW, ₹60,000 for 2kW, ₹78,000 for 3kW and above (Domestic LT category).",
+    "net_metering_disclaimer": "Net-metering approval is granted by TANGEDCO based on distribution transformer load availability (up to 100% of sanctioned load for LT domestic connections)."
+  },
+  "admin_pin": "admin123"
+}
